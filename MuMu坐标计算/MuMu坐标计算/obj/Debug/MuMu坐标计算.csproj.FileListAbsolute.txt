@@ -1,0 +1,10 @@
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Debug\MuMu坐标计算.exe.config
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Debug\MuMu坐标计算.exe
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Debug\MuMu坐标计算.pdb
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.csproj.AssemblyReference.cache
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.Form1.resources
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.Properties.Resources.resources
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.csproj.GenerateResource.cache
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.csproj.CoreCompileInputs.cache
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.exe
+G:\编程\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj\Debug\MuMu坐标计算.pdb
