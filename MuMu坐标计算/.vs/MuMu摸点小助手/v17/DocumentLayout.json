@@ -1,29 +1,29 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\",
+  "WorkspaceRootPath": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|g:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\mumu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\mumujsoneditor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\mumujsoneditor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|g:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\mumu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\mumujsoneditor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\mumujsoneditor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\mousesimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\mousesimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|MuMu\u6478\u70B9\u5C0F\u52A9\u624B||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97\\mousesimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{1FFB5850-1E53-4953-A44D-E983CE44869E}|MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj|solutionrelative:mumu\u5750\u6807\u8BA1\u7B97\\mousesimulator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,38 +33,51 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "Form1.Designer.cs",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
-              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
-              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
-              "ViewState": "AQIAAAcAAAAAAAAAAADwvx8AAAAJAAAA",
+              "DocumentIndex": 2,
+              "Title": "MuMuJsonEditor.cs",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
+              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
+              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
+              "ViewState": "AQIAAKoAAAAAAAAAAAAuwMkAAAAbAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-01T16:44:46.515Z"
+              "WhenOpened": "2025-11-03T11:49:26.313Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 5,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
+              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.Designer.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-01T16:44:46.515Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "MuMu\u6478\u70B9\u5C0F\u52A9\u624B",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
               "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
               "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u6478\u70B9\u5C0F\u52A9\u624B.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
               "WhenOpened": "2024-09-01T12:25:07.834Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 3,
               "Title": "MouseSimulator.cs",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
               "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
               "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\MouseSimulator.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
@@ -73,38 +86,27 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "MuMuJsonEditor.cs",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
-              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
-              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\MuMuJsonEditor.cs",
-              "ViewState": "AQIAAPIAAAAAAAAAAAAAAAIBAAANAAAA",
+              "Title": "Form1.cs",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
+              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
+              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
+              "ViewState": "AQIAANIJAAAAAAAAAAAnwPQJAAAVAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T11:49:26.313Z",
+              "WhenOpened": "2024-08-18T13:42:06.763Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 1,
-              "Title": "Form1.cs",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
-              "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
-              "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
-              "ViewState": "AQIAAI8DAAAAAAAAAAArwKoDAAARAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-18T13:42:06.763Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
               "Title": "Form1.cs [\u8BBE\u8BA1]",
-              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
+              "DocumentMoniker": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
               "RelativeDocumentMoniker": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs",
-              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs [\u8BBE\u8BA1]",
+              "ToolTip": "G:\\\u7F16\u7A0B\\\u5750\u6807\u8BA1\u7B97\\mumu\u5750\u6807\u8BA1\u7B97 2.8.1\\MuMu\u5750\u6807\u8BA1\u7B97\\MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs [\u8BBE\u8BA1]",
               "RelativeToolTip": "MuMu\u5750\u6807\u8BA1\u7B97\\Form1.cs [\u8BBE\u8BA1]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-08-13T12:02:52.065Z"
+              "WhenOpened": "2024-08-13T12:02:52.065Z",
+              "EditorCaption": " [\u8BBE\u8BA1]"
             }
           ]
         }

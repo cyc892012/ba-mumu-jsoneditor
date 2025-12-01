@@ -21,6 +21,18 @@ namespace MuMu坐标计算
     {
         //防止四个文本框对应的坐标计算冲突
         int flag = 1;
+        //控制下拉框刷新时的选项变动，防止重复调用
+        bool flagFlushingFilename = true;
+        //控制下拉框搜索功能延迟刷新防止重复刷新
+        bool flagSleepFlushingFilename = true;
+        //控制分辨率下拉框刷新时的选项变动，防止重复调用
+        bool flagFlushingResolution = true;
+        //控制分辨率类型下拉框刷新时的选项变动，防止重复调用
+        bool flagFlushingResolutionType = true;
+        //控制坐标文本框变动时候的函数调用，防止重复更新
+        bool flagFXFYChanged = true;
+        //控制重载提示语句，防止重复加载
+        bool flagReloadingTip = true;
         //记录上方文件要读取/修改的按键
         KeyEventArgs bindKey =null;
         string bindKeyScan_code = "";
@@ -39,18 +51,53 @@ namespace MuMu坐标计算
         //保留的小数位数
         String FDP = "F16";
         // 保存上次选中文件的路径
-        string lastSelectedFilePath="";
+        string lastSelectedFilePath = "";
+        //重载文件时的语句
+        string reloadingTip = "该操作会导致对当前文件的编辑无法还原，是否继续？";
         //预设按键类型的数据源
         Dictionary<string, string> KeyTypes { get; } = new Dictionary<string, string>{
             {"点击按键","Click" },
             { "宏指牌按键","Macro"}
         };
+        //预设包名分类的数据源
+        Dictionary<string, string> PackageNameTypes{ get; } = new Dictionary<string, string>{
+            {"官服","com.RoamingStar.BlueArchive-" },
+            { "B服","com.RoamingStar.BlueArchive.bilibili-"},
+            { "日服","com.YostarJP.BlueArchive-"},
+            { "国际服","com.nexon.bluearchive-"},
+            { "其他","other"},
+            { "宇宙服","萌新666sssaaa"}
+        };
+        //预设分辨率类型分类的数据源
+        Dictionary<string, string> resolutionTypes { get; } = new Dictionary<string, string>{
+            {"平板","1" },
+            { "手机","2"},
+            { "超宽屏","3"},
+            { "自定义","4"}
+        };
+        //预设各个分辨率下的数据源
+        Dictionary<string, string> resolution1 { get; } = new Dictionary<string, string>{
+            {"2560x1440","2560,1440"  },
+            {"1920x1080","1920,1080"  },
+            {"1600x900","1600,900"  },
+            {"1280x720","1280,720"  }
+        };
+        Dictionary<string, string> resolution2 { get; } = new Dictionary<string, string>{
+            {"1440x2560","1440,2560"  },
+            {"1080x1920","1080,1920"  },
+            {"900x1600","900,1600"  },
+            {"720x1280","720,1280" }
+        };
+        Dictionary<string, string> resolution3 { get; } = new Dictionary<string, string>{
+            {"3200x1440","3200,1440"  },
+            {"2400x1080","2400,1080"  },
+            {"1920x864","1920,864"  },
+            {"1600x720","1600,720"  }
+        };
         //存储备份文件
         List<string> JsonTemp = new List<string>();
         //指向当前文件备份位置
         int JsonTempNowFlag = 0;
-        //存储文件夹路径
-        string JsonFolderPath = "";
         public Form1()
         {
             InitializeComponent();
@@ -66,10 +113,34 @@ namespace MuMu坐标计算
             FindKeytextBox.Text = FindKay.ToString().ToUpper(CultureInfo.InvariantCulture);
             ResetKeytextBox.Text = ResetKey.ToString().ToUpper(CultureInfo.InvariantCulture);
             InitializeKeysComboBox(KeysListcomboBox);
-            // 自动选中第一个选项（如果存在）
-            if (KeysListcomboBox.Items.Count > 0)
+            //初始化包名选择框
+            packageNamecomboBox.DataSource = PackageNameTypes.ToList();
+            packageNamecomboBox.DisplayMember = "Key";
+            packageNamecomboBox.ValueMember = "Value";
+            //初始化分辨率类型选择框
+            resolutionTypecomboBox.DataSource = resolutionTypes.ToList();
+            resolutionTypecomboBox.DisplayMember = "Key";
+            resolutionTypecomboBox.ValueMember = "Value";
+            //初始化分辨率选择框
+            InitializeResolutioncomboBox(resolutioncomboBox);
+            //尝试获取mumu目录
+            if (string.IsNullOrWhiteSpace(Properties.Settings.Default.JsonFolderPath)) {
+                TryGetJsonFileFolder();
+            }
+            InitializeFileNamecomboBox(fileNamecomboBox,false);
+            //初始化后加载
+            if (fileNamecomboBox.SelectedValue != null)
             {
-                KeysListcomboBox.SelectedIndex = 0;
+                updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                string filePath = @JsonUrltextBox.Text;
+                if (File.Exists(filePath))
+                {
+                    Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(filePath);
+                    Properties.Settings.Default.Save();
+                    lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                    MyMuMuJosn = File.ReadAllText(filePath);
+                    BackupAfterJsonReading();
+                }
             }
             //初始化按键类型选项框
             keyTypelistcomboBox.DataSource = KeyTypes.ToList();
@@ -129,16 +200,22 @@ namespace MuMu坐标计算
                     if (MyMuMuJosn == "")
                     {
                         MessageBox.Show("请先加载一个Json文件！");
+                        if (autoReadcheckBox.Checked) { autoReadcheckBox.Checked = false; }
                         return;
                     }
                     if (MuMuJsonEditor.FindKey(MyMuMuJosn, bindKey3) == -1)
                     {
                         MessageBox.Show("当前Json文件中未找到按键" + Button3textBox.Text);
+                        if (autoReadcheckBox.Checked) { autoReadcheckBox.Checked = false; }
                     }
                     else
                     {
                         string[] key = MuMuJsonEditor.ReadKeyPP(MyMuMuJosn, bindKey3);
-                        if (key == null) { MessageBox.Show("查找坐标失败，请检查您指定的按键中是否有坐标存在！"); return; }
+                        if (key == null) { 
+                            MessageBox.Show("查找坐标失败，请检查您指定的按键中是否有坐标存在！");
+                            if (autoReadcheckBox.Checked) { autoReadcheckBox.Checked = false; }
+                            return; 
+                        }
                         JSXtextBox.Text = key[0];
                         JSYtextBox.Text = key[1];
                     }
@@ -146,6 +223,7 @@ namespace MuMu坐标计算
                 catch
                 {
                     MessageBox.Show("当前未绑定按键，请检查您的设置！");
+                    if (autoReadcheckBox.Checked) { autoReadcheckBox.Checked = false; }
                 }
             }
         }
@@ -175,9 +253,9 @@ namespace MuMu坐标计算
                     return false;
                 }
                 //检查是否删除json文件后又还原但是未重新加载列表（真有人能无聊到触发这个bug吗？？？）
-                if (KeysListcomboBox.SelectedItem.ToString() == "数据目录不存在")
+                if (KeysListcomboBox.SelectedItem.ToString() == "数据目录不存在"|| KeysListcomboBox.SelectedItem.ToString()== "未找到符合条件的文件！")
                 {
-                    MessageBox.Show("请重新选择你的基础键位！");
+                    MessageBox.Show("文件不存在，请重新选择你的基础键位！");
                     return false;
                 }
                 return true;
@@ -334,9 +412,103 @@ namespace MuMu坐标计算
         //保存默认分辨率
         private void FSave_Click(object sender, EventArgs e)
         {
-            Properties.Settings.Default.FX = FXtextBox.Text;
-            Properties.Settings.Default.FY = FYtextBox.Text;
-            Properties.Settings.Default.Save();
+            try
+            {
+                Properties.Settings.Default.FX = FXtextBox.Text;
+                Properties.Settings.Default.FY = FYtextBox.Text;
+                Properties.Settings.Default.Save();
+                //防止重复触发selecteditemchanged
+                flagFlushingResolution = false;
+                flagFlushingResolutionType = false;
+                //获取预设类型
+                string[] ResolutionTypesValues = resolutionTypes.Values.ToArray();
+                //判断当前输入框中的分辨率，进行分类
+                if (!string.IsNullOrEmpty(FXtextBox.Text) & !string.IsNullOrEmpty(FYtextBox.Text))
+                {
+                    string key = FXtextBox.Text + "x" + FYtextBox.Text;
+                    if (resolution1.ContainsKey(key))
+                    {
+                        //属于平板
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[0];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution1.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution1.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                    else if (resolution2.ContainsKey(key))
+                    {
+                        //属于手机
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[1];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution2.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution2.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                    else if (resolution3.ContainsKey(key))
+                    {
+                        //属于超宽屏
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[2];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution3.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution3.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                    else
+                    {
+                        //属于自定义
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[3];
+                        deleteUDResolutionbutton.Visible = true;
+                        Dictionary<string, string> resolution4 = new Dictionary<string, string> { };
+                        if (!string.IsNullOrWhiteSpace(Settings.Default.resolution4String))
+                        {
+                            resolution4 = MuMuJsonEditor.StringToResolution(Settings.Default.resolution4String);
+                        }
+                        if (!resolution4.ContainsKey(key))
+                        {
+                            resolution4.Add(key, FXtextBox.Text + "," + FYtextBox.Text);
+                        }
+                        resolutioncomboBox.DataSource = resolution4.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution4.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                        Settings.Default.resolution4String = MuMuJsonEditor.ResolutionToString(resolution4);
+                        Settings.Default.Save();
+                    }
+                }
+                //退出时恢复开关
+                flagFlushingResolution = true;
+                flagFlushingResolutionType = true;
+            }
+            catch (Exception ex)
+            {
+                // 异常处理
+                resolutioncomboBox.DataSource = null;
+                resolutioncomboBox.Items.Add($"加载失败: {ex.Message}");
+                resolutioncomboBox.SelectedIndex = 0;
+                //退出时恢复开关
+                flagFlushingResolution = true;
+                flagFlushingResolutionType = true;
+                MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
         //读取默认分辨率
         private void FLoad_Click_1(object sender, EventArgs e)
@@ -503,10 +675,42 @@ namespace MuMu坐标计算
                 }
                 KeysListcomboBox.DataSource = null;
                 InitializeKeysComboBox(KeysListcomboBox);
+                KeysListSearchtextBox.Visible = true;
+                KeysListSearchtextBox.BringToFront();
+                KeysListSearchtextBox.Focus();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"刷新失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        //关闭下拉框时隐藏搜索框
+        private void KeysListcomboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            try
+            {
+                KeysListSearchtextBox.Visible = false;
+                flagSleepFlushingFilename = true;
+            }
+            catch (Exception ex)
+            {
+                flagSleepFlushingFilename = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //实现搜索功能
+        private void KeysListSearchtextBox_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //无论如何，先关闭计时器
+                flagSleepFlushingFilename = false;
+                string searchText = KeysListSearchtextBox.Text;
+                InitializeKeysComboBoxAndSearch(KeysListcomboBox, searchText,true);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
             }
         }
         //初始化存储的基础键位路径
@@ -521,6 +725,7 @@ namespace MuMu坐标计算
                 // 检查文件夹是否存在
                 if (!Directory.Exists(dataFolder))
                 {
+                    KeysListcomboBox.DataSource = null;
                     KeysListcomboBox.Items.Clear();
                     KeysListcomboBox.Items.Add("数据目录不存在");
                     KeysListcomboBox.SelectedIndex = 0;
@@ -564,8 +769,479 @@ namespace MuMu坐标计算
             catch (Exception ex)
             {
                 // 异常处理
-                KeysListcomboBox.Items.Clear();
+                KeysListcomboBox.DataSource=null;
                 KeysListcomboBox.Items.Add($"加载失败: {ex.Message}");
+                MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //初始化存储的基础键位路径并进行检索
+        private void InitializeKeysComboBoxAndSearch(ComboBox KeysListcomboBox,string searchText,bool flagBack)
+        {
+            try
+            {
+                // 获取程序所在目录的"data"子文件夹路径
+                string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                string dataFolder = Path.Combine(baseDir, "data");
+
+                // 检查文件夹是否存在
+                if (!Directory.Exists(dataFolder))
+                {
+                    KeysListcomboBox.DataSource = null;
+                    KeysListcomboBox.Items.Clear();
+                    KeysListcomboBox.Items.Add("数据目录不存在");
+                    KeysListcomboBox.SelectedIndex = 0;
+                    return;
+                }
+
+                // 获取所有JSON文件路径
+                var jsonFiles = Directory.GetFiles(dataFolder, "*.json", SearchOption.TopDirectoryOnly);
+
+                // 解析文件名和路径
+                var items = new List<KeyValuePair<string, string>>();
+                foreach (var file in jsonFiles)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    if (fileName.IndexOf(searchText) != -1) {
+                        items.Add(new KeyValuePair<string, string>(file, fileName));
+                    }
+                }
+                if (items.Count == 0)
+                {
+                    KeysListcomboBox.DataSource = null;
+                    KeysListcomboBox.Items.Clear();
+                    KeysListcomboBox.Items.Add("未找到符合条件的文件！");
+                    KeysListcomboBox.SelectedIndex = 0;
+                    return;
+                }
+                // 数据绑定
+                string backKeysListSelectedValue = "";
+                if (KeysListcomboBox.SelectedValue != null) { backKeysListSelectedValue = KeysListcomboBox.SelectedValue.ToString(); }
+                KeysListcomboBox.DataSource = items;
+                KeysListcomboBox.DisplayMember = "Value";  // 显示文件名
+                KeysListcomboBox.ValueMember = "Key";      // 存储完整路径
+                // 尝试恢复之前选中项
+                if (flagBack) {
+                    if (!string.IsNullOrEmpty(lastSelectedFilePath))
+                    {
+                        var selectedItem = items.FirstOrDefault(i => i.Key == lastSelectedFilePath);
+                        if (selectedItem.Key != null)
+                        {
+                            KeysListcomboBox.SelectedItem = selectedItem;
+                        }
+                        else if (jsonFiles.Any()) // 无原选项时选中第一个
+                        {
+                            KeysListcomboBox.SelectedIndex = 0;
+                        }
+                    }
+                    else if (jsonFiles.Any()) // 首次加载时选中第一个
+                    {
+                        KeysListcomboBox.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    var selectedItem = items.FirstOrDefault(i => i.Key == backKeysListSelectedValue);
+                    if (selectedItem.Key != null)
+                    {
+                        KeysListcomboBox.SelectedItem = selectedItem;
+                    }
+                    else if (jsonFiles.Any()) // 无原选项时选中第一个
+                    {
+                        KeysListcomboBox.SelectedIndex = 0;
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                // 异常处理
+                KeysListcomboBox.DataSource=null;
+                KeysListcomboBox.Items.Add($"加载失败: {ex.Message}");
+                MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //按包名分类初始化拖入文件对应文件夹中Json文件路径
+        private void InitializeFileNamecomboBox(ComboBox fileNamecomboBox,bool flagback)
+        {
+            try
+            {
+                //先关闭selectIndexchanged函数的触发开关，防止初始化时重复触发
+                flagFlushingFilename = false;
+                // 获取文件夹路径
+                string dataFolder = @Settings.Default.JsonFolderPath;
+                // 检查文件夹是否存在
+                if (!Directory.Exists(dataFolder))
+                {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("数据目录不存在");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                // 获取所有JSON文件路径
+                var jsonFiles = Directory.GetFiles(dataFolder, "*.json", SearchOption.TopDirectoryOnly);
+                //获取预设类型
+                string[] PackageNamesValues = PackageNameTypes.Values.ToArray();
+                //判断是否存在上一次选择路径，如果有的话优先将包名设置为前一次的设置，正常下拉选择时不修改该设置
+                if (!string.IsNullOrEmpty(JsonUrltextBox.Text)&flagback) {
+                    if (JsonUrltextBox.Text.IndexOf(PackageNamesValues[0]) != -1)
+                    {
+                        //属于国服
+                        packageNamecomboBox.SelectedValue = PackageNamesValues[0];
+                    }
+                    else if (JsonUrltextBox.Text.IndexOf(PackageNamesValues[1]) != -1)
+                    {
+                        //属于B服
+                        packageNamecomboBox.SelectedValue = PackageNamesValues[1];
+                    }
+                    else if (JsonUrltextBox.Text.IndexOf(PackageNamesValues[2]) != -1)
+                    {
+                        //属于日服
+                        packageNamecomboBox.SelectedValue = PackageNamesValues[2];
+                    }
+                    else if (JsonUrltextBox.Text.IndexOf(PackageNamesValues[3]) != -1)
+                    {
+                        //属于国际服
+                        packageNamecomboBox.SelectedValue = PackageNamesValues[3];
+                    }
+                    else
+                    {
+                        //属于其他
+                        packageNamecomboBox.SelectedValue = PackageNamesValues[4];
+                    }
+                }
+                string PackageName = packageNamecomboBox.SelectedValue.ToString();
+                // 解析文件名和路径
+                var items = new List<KeyValuePair<string, string>>();
+                if (PackageName == PackageNamesValues[0]|| PackageName == PackageNamesValues[1] || PackageName == PackageNamesValues[2] || PackageName == PackageNamesValues[3])
+                {
+                    //官服，B服，日服，国际服，正常分类
+                    foreach (var file in jsonFiles)
+                    {
+                        //获取文件名
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.IndexOf(PackageName) != -1) {
+                            //去掉包名后，加入列表。
+                            fileName = fileName.Replace(PackageName, "");
+                            items.Add(new KeyValuePair<string, string>(file, fileName));
+                        }
+                    }
+                }
+                else if (PackageName == PackageNamesValues[4])
+                {
+                    foreach (var file in jsonFiles)
+                    {
+                        //获取文件名
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.IndexOf(PackageNamesValues[0]) == -1& fileName.IndexOf(PackageNamesValues[1]) == -1& fileName.IndexOf(PackageNamesValues[2]) == -1 & fileName.IndexOf(PackageNamesValues[3]) == -1)
+                        {
+                            //不属于四个服务器任何一个包名，加入其他列表
+                            items.Add(new KeyValuePair<string, string>(file, fileName));
+                        }
+                    }
+                    //其他文件
+                }
+                else if (PackageName == PackageNamesValues[5]){
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("绿玩哪有宇宙服，你清醒一点。");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                    //宇宙服彩蛋
+                }
+                else{
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("为啥你能看到这条提示，你找到了我未曾想到的bug！");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                if (items.Count == 0) {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("该分类下没有对应的Json文件！");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                // 数据绑定
+                fileNamecomboBox.DataSource = items;
+                fileNamecomboBox.DisplayMember = "Value";  // 显示文件名
+                fileNamecomboBox.ValueMember = "Key";      // 存储完整路径
+                // 尝试恢复之前选中项
+                if (!string.IsNullOrEmpty(JsonUrltextBox.Text))
+                {
+                    var selectedItem = items.FirstOrDefault(i => i.Key == JsonUrltextBox.Text);
+                    if (selectedItem.Key != null)
+                    {
+                        fileNamecomboBox.SelectedItem = selectedItem;
+                    }
+                    else if (jsonFiles.Any()) // 无原选项时选中第一个
+                    {
+                        fileNamecomboBox.SelectedIndex = 0;
+                    }
+                }
+                else if (jsonFiles.Any()) // 首次加载时选中第一个
+                {
+                    fileNamecomboBox.SelectedIndex = 0;
+                }
+                //退出时恢复开关
+                flagFlushingFilename = true;
+
+            }
+            catch (Exception ex)
+            {
+                // 异常处理
+                fileNamecomboBox.DataSource=null;
+                fileNamecomboBox.Items.Add($"加载失败: {ex.Message}");
+                //退出时恢复开关
+                flagFlushingFilename = true;
+                MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //按包名分类初始化拖入文件对应文件夹中Json文件路径并进行检索
+        private void InitializeFileNamecomboBoxAndSearch(ComboBox fileNamecomboBox, string searchText, bool flagBack) {
+            try
+            {
+                //防止重复触发selectIndexchanged
+                flagFlushingFilename = false;
+                // 获取文件夹路径
+                string dataFolder = @Settings.Default.JsonFolderPath;
+
+                // 检查文件夹是否存在
+                if (!Directory.Exists(dataFolder))
+                {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("数据目录不存在");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                // 获取所有JSON文件路径
+                var jsonFiles = Directory.GetFiles(dataFolder, "*.json", SearchOption.TopDirectoryOnly);
+                //获取预设类型
+                string[] PackageNamesValues = PackageNameTypes.Values.ToArray();
+                string PackageName = packageNamecomboBox.SelectedValue.ToString();
+                // 解析文件名和路径
+                var items = new List<KeyValuePair<string, string>>();
+                if (PackageName == PackageNamesValues[0] || PackageName == PackageNamesValues[1] || PackageName == PackageNamesValues[2] || PackageName == PackageNamesValues[3])
+                {
+                    //官服，B服，日服，国际服，正常分类
+                    foreach (var file in jsonFiles)
+                    {
+                        //获取文件名
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.IndexOf(PackageName) != -1)
+                        {
+                            //去掉包名
+                            fileName = fileName.Replace(PackageName, "");
+                            //符合搜索条件才加入
+                            if (fileName.IndexOf(searchText) != -1) {
+                                items.Add(new KeyValuePair<string, string>(file, fileName));
+                            }
+                        }
+                    }
+                }
+                else if (PackageName == PackageNamesValues[4])
+                {
+                    foreach (var file in jsonFiles)
+                    {
+                        //获取文件名
+                        string fileName = Path.GetFileNameWithoutExtension(file);
+                        if (fileName.IndexOf(PackageNamesValues[0]) == -1 & fileName.IndexOf(PackageNamesValues[1]) == -1 & fileName.IndexOf(PackageNamesValues[2]) == -1 & fileName.IndexOf(PackageNamesValues[3]) == -1)
+                        {
+                            //不属于四个服务器任何一个包名，加入其他列表
+                            if (fileName.IndexOf(searchText) != -1)
+                            {
+                                items.Add(new KeyValuePair<string, string>(file, fileName));
+                            }
+                        }
+                    }
+                    //其他文件
+                }
+                else if (PackageName == PackageNamesValues[5])
+                {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("绿玩哪有宇宙服，你清醒一点。");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                    //宇宙服彩蛋
+                }
+                else
+                {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("为啥你能看到这条提示，你找到了我未曾想到的bug！");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                if (items.Count == 0)
+                {
+                    fileNamecomboBox.DataSource = null;
+                    fileNamecomboBox.Items.Clear();
+                    fileNamecomboBox.Items.Add("未找到符合条件的文件！");
+                    fileNamecomboBox.SelectedIndex = 0;
+                    //退出时恢复开关
+                    flagFlushingFilename = true;
+                    return;
+                }
+                // 数据绑定
+                string backSelectdValue = "";
+                if (fileNamecomboBox.SelectedValue != null) { backSelectdValue = fileNamecomboBox.SelectedValue.ToString(); }
+                fileNamecomboBox.DataSource = items;
+                fileNamecomboBox.DisplayMember = "Value";  // 显示文件名
+                fileNamecomboBox.ValueMember = "Key";      // 存储完整路径
+                if (flagBack)
+                {
+                    // 尝试恢复之前选中项
+                    if (!string.IsNullOrEmpty(JsonUrltextBox.Text))
+                    {
+                        var selectedItem = items.FirstOrDefault(i => i.Key == JsonUrltextBox.Text);
+                        if (selectedItem.Key != null)
+                        {
+                            fileNamecomboBox.SelectedItem = selectedItem;
+                        }
+                        else if (jsonFiles.Any()) // 无原选项时选中第一个
+                        {
+                            fileNamecomboBox.SelectedIndex = 0;
+                        }
+                    }
+                    else if (jsonFiles.Any()) // 首次加载时选中第一个
+                    {
+                        fileNamecomboBox.SelectedIndex = 0;
+                    }
+                }
+                else
+                {
+                    var selectedItem = items.FirstOrDefault(i => i.Key == backSelectdValue);
+                    if (selectedItem.Key != null)
+                    {
+                        fileNamecomboBox.SelectedItem = selectedItem;
+                    }
+                    else if (jsonFiles.Any()) // 无原选项时选中第一个
+                    {
+                        fileNamecomboBox.SelectedIndex = 0;
+                    }
+                }
+                //退出时恢复开关
+                flagFlushingFilename = true;
+            }
+            catch (Exception ex)
+            {
+                // 异常处理
+                fileNamecomboBox.DataSource=null;
+                fileNamecomboBox.Items.Add($"加载失败: {ex.Message}");
+                //退出时恢复开关
+                flagFlushingFilename = true;
+                MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void InitializeResolutioncomboBox(ComboBox resolutioncomboBox)
+        {
+            try
+            {
+                //防止重复触发selecteditemchanged
+                flagFlushingResolution = false;
+                flagFlushingResolutionType = false;
+                //获取预设类型
+                string[] ResolutionTypesValues = resolutionTypes.Values.ToArray();
+                //判断当前输入框中的分辨率，进行分类
+                if (!string.IsNullOrEmpty(FXtextBox.Text)&!string.IsNullOrEmpty(FYtextBox.Text))
+                {
+                    string key = FXtextBox.Text + "x" + FYtextBox.Text;
+                    if (resolution1.ContainsKey(key))
+                    {
+                        //属于平板
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[0];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution1.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";  
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution1.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+
+                    }
+                    else if (resolution2.ContainsKey(key))
+                    {
+                        //属于手机
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[1];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution2.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution2.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                    else if (resolution3.ContainsKey(key))
+                    {
+                        //属于超宽屏
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[2];
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution3.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution3.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                    else
+                    {
+                        //属于自定义
+                        resolutionTypecomboBox.SelectedValue = ResolutionTypesValues[3];
+                        deleteUDResolutionbutton.Visible = true;
+                        Dictionary<string, string> resolution4 = new Dictionary<string, string> { };
+                        if (!string.IsNullOrWhiteSpace(Settings.Default.resolution4String)) {
+                            resolution4 = MuMuJsonEditor.StringToResolution(Settings.Default.resolution4String);
+                        }
+                        if (!resolution4.ContainsKey(key)) {
+                            key = "*" + key;
+                            resolution4.Add(key, FXtextBox.Text+ "," + FYtextBox.Text);
+                        }
+                        resolutioncomboBox.DataSource = resolution4.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        var selectedItem = resolution4.FirstOrDefault(i => i.Key == key);
+                        if (selectedItem.Key != null)
+                        {
+                            resolutioncomboBox.SelectedItem = selectedItem;
+                        }
+                    }
+                }
+                //退出时恢复开关
+                flagFlushingResolution = true;
+                flagFlushingResolutionType = true;
+            }
+            catch (Exception ex)
+            {
+                // 异常处理
+                resolutioncomboBox.DataSource = null;
+                resolutioncomboBox.Items.Add($"加载失败: {ex.Message}");
+                resolutioncomboBox.SelectedIndex = 0;
+                //退出时恢复开关
+                flagFlushingResolution = true;
+                flagFlushingResolutionType = true;
                 MessageBox.Show($"初始化ComboBox时发生错误:\n{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -686,7 +1362,7 @@ namespace MuMu坐标计算
                         JSXtextBox.Text = (KX / FX).ToString(FDP);
                         JSYtextBox.Text = (KY / FY).ToString(FDP);
                     }
-
+                    InitializeResolutioncomboBox(resolutioncomboBox);
                     flag = 1;
                 }
                 
@@ -879,13 +1555,35 @@ namespace MuMu坐标计算
         {
             try
             {
+                if (!string.IsNullOrEmpty(Properties.Settings.Default.JsonFolderPath)) { JsonopenFileDialog.InitialDirectory = Properties.Settings.Default.JsonFolderPath; }
                 if (JsonopenFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    JsonUrltextBox.Text = JsonopenFileDialog.FileName;
-                    JsonUrltextBox.TextAlign = HorizontalAlignment.Right;
+                    if (Undobutton.Enabled || Redobutton.Enabled)
+                    {
+                        DialogResult result = MessageBox.Show(reloadingTip, "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (result == DialogResult.No)
+                        {
+                            return;//用户选择了取消
+                        }
+                    }
+                    updateJsonUrltextBox(JsonopenFileDialog.FileName);
                     Properties.Settings.Default.JsonFolderPath= Path.GetDirectoryName(@JsonUrltextBox.Text);
                     Properties.Settings.Default.Save();
-                    lastWriteTime = File.GetLastWriteTimeUtc(JsonopenFileDialog.FileName);
+                    string filePath = @JsonUrltextBox.Text;
+                    if (File.Exists(filePath))
+                    {
+                        MyMuMuJosn = File.ReadAllText(filePath);
+                        autoReadBindkey3PP();
+                        BackupAfterJsonReading();
+                        fileNameSearchtextBox.Text = "";
+                        InitializeFileNamecomboBox(fileNamecomboBox,true);
+                        MessageBox.Show("加载成功！");
+                    }
+                    else
+                    {
+                        MessageBox.Show("不存在的Json文件，请检查您的文件路径。");
+                        return;
+                    }
                 }
             }
             catch (Exception ex)
@@ -923,11 +1621,9 @@ namespace MuMu坐标计算
             try
             {
                 string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-                JsonUrltextBox.Text = files[0];
-                JsonUrltextBox.TextAlign = HorizontalAlignment.Right;
+                updateJsonUrltextBox(files[0]);
                 Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(JsonUrltextBox.Text);
                 Properties.Settings.Default.Save();
-                lastWriteTime = File.GetLastWriteTimeUtc(files[0]);
                 /*
                 if (MyMuMuJosn != "")
                 {
@@ -941,11 +1637,11 @@ namespace MuMu坐标计算
                 string filePath = @JsonUrltextBox.Text;
                 if (File.Exists(filePath))
                 {
-                    bool readflag = true;
-                    if (MyMuMuJosn == "") { readflag = false; }
                     MyMuMuJosn = File.ReadAllText(filePath);
-                    if (readflag) { autoReadBindkey3PP(); }
+                    autoReadBindkey3PP();
                     BackupAfterJsonReading();
+                    fileNameSearchtextBox.Text = "";
+                    InitializeFileNamecomboBox(fileNamecomboBox,true);
                 }
                 else
                 {
@@ -959,38 +1655,27 @@ namespace MuMu坐标计算
             }
             
         }
-        //加载路径内的Json文件
-        private void LoadJson_Click(object sender, EventArgs e)
-        {
-            try
+        //独立创建指定类型按键并写入的代码，便于复用
+        private void createAndwriteSetKey() {
+            string[] keyValues = KeyTypes.Values.ToArray();
+            if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[0])
             {
-                if (MyMuMuJosn != "")
-                {
-                    DialogResult result = MessageBox.Show("重新加载会导致尚未保存的修改被覆盖，是否继续？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                    if (result == DialogResult.No)
-                    {
-                        return;//用户选择了取消
-                    }
-                }
-                string filePath = @JsonUrltextBox.Text;
-                if (File.Exists(filePath))
-                {
-                    bool readflag = true;
-                    if (MyMuMuJosn == "") { readflag = false; }
-                    MyMuMuJosn = File.ReadAllText(filePath);
-                    if (readflag) { autoReadBindkey3PP(); }
-                    BackupAfterJsonReading();
-                    MessageBox.Show("加载成功！");
-                }
-                else
-                {
-                    MessageBox.Show("不存在的Json文件，请检查您的文件路径。");
-                    return;
-                }
+                //创建点击按键
+                string key = MuMuJsonEditor.CreateKey(keyValues[0], bindKey, JSXtextBox.Text, JSYtextBox.Text, bindKeyScan_code);
+                MyMuMuJosn = MuMuJsonEditor.WriteKeys(key, MyMuMuJosn);
+                if (WriteToJsonAndBackup()) { MessageBox.Show($"点击按键{ButtontextBox.Text}生成并写入成功！如出现问题请转人工。"); }
             }
-            catch (Exception ex)
+            else if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[1])
             {
-                MessageBox.Show($"发生错误：{ex.Message}");
+                //创建宏按键
+                string key = MuMuJsonEditor.CreateKey(keyValues[1], bindKey, JSXtextBox.Text, JSYtextBox.Text, bindKeyScan_code);
+                MyMuMuJosn = MuMuJsonEditor.WriteKeys(key, MyMuMuJosn);
+                if (WriteToJsonAndBackup()) { MessageBox.Show($"宏指牌按键{ButtontextBox.Text}生成并写入成功！如出现问题请转人工。"); }
+            }
+            else
+            {
+                MessageBox.Show("未知错误！我也想知道你是怎么触发这条提示的？？？");
+                return;
             }
         }
         //修改并保存按键
@@ -998,6 +1683,8 @@ namespace MuMu坐标计算
         {
             try
             {
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
                 string filePath = @JsonUrltextBox.Text;
                 if (MyMuMuJosn == "" || filePath == "")
                 {
@@ -1009,7 +1696,21 @@ namespace MuMu坐标计算
                     MessageBox.Show("请先绑定一个按键！");
                     return;
                 }
-
+                if (replaceKeycheckBox.Checked) {
+                    DialogResult result = MessageBox.Show($"是否按预设强制替换对应按键？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.No)
+                    {
+                        return;//用户选择了取消
+                    }
+                    if (MuMuJsonEditor.FindKey(MyMuMuJosn, bindKey) != -1){
+                        //文件中存在按键
+                        //先删除
+                        MyMuMuJosn = MuMuJsonEditor.DeleteKey(bindKey.KeyValue.ToString(), MyMuMuJosn);
+                    }
+                    //后写入
+                    createAndwriteSetKey();
+                    return;
+                }
                 if (MuMuJsonEditor.FindKey(MyMuMuJosn, bindKey) == -1)
                 {
                     DialogResult result = MessageBox.Show($"当前Json文件中未找到按键{ButtontextBox.Text},是否新建指定类型的按键？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -1017,26 +1718,7 @@ namespace MuMu坐标计算
                     {
                         return;//用户选择了取消
                     }
-                    string[] keyValues = KeyTypes.Values.ToArray();
-                    if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[0])
-                    {
-                        //创建点击按键
-                        string key = MuMuJsonEditor.CreateKey(keyValues[0], bindKey, JSXtextBox.Text, JSYtextBox.Text, bindKeyScan_code);
-                        MyMuMuJosn = MuMuJsonEditor.WriteKeys(key, MyMuMuJosn);
-                        if (WriteToJsonAndBackup()) { MessageBox.Show($"点击按键{ButtontextBox.Text}生成并写入成功！如出现问题请转人工。"); }
-                    }
-                    else if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[1])
-                    {
-                        //创建宏按键
-                        string key = MuMuJsonEditor.CreateKey(keyValues[1], bindKey, JSXtextBox.Text, JSYtextBox.Text, bindKeyScan_code);
-                        MyMuMuJosn = MuMuJsonEditor.WriteKeys(key, MyMuMuJosn);
-                        if (WriteToJsonAndBackup()) { MessageBox.Show($"宏指牌按键{ButtontextBox.Text}生成并写入成功！如出现问题请转人工。"); }
-                    }
-                    else
-                    {
-                        MessageBox.Show("未知错误！我也想知道你是怎么触发这条提示的？？？");
-                        return;
-                    }
+                    createAndwriteSetKey();
                 }
                 else
                 {
@@ -1074,9 +1756,10 @@ namespace MuMu坐标计算
                 string filePath = @JsonUrltextBox.Text;
                 if (File.Exists(filePath))
                 {
-                    if (File.GetLastWriteTimeUtc(filePath) != lastWriteTime)
+                    if ((File.GetLastWriteTimeUtc(filePath) != lastWriteTime)&flagReloadingTip)
                     {
-                        lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                        //防止重复触发
+                        flagReloadingTip = false;
                         DialogResult result = MessageBox.Show("检测到Json文件被其他程序修改，是否重新加载？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
                         if (result == DialogResult.Yes)
                         {
@@ -1085,6 +1768,9 @@ namespace MuMu坐标计算
                             autoReadBindkey3PP();
                             BackupAfterJsonReading();
                         }
+                        lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                        //本次触发结束后恢复标记
+                        flagReloadingTip = true;
                     }
                 }
             }
@@ -1138,6 +1824,8 @@ namespace MuMu坐标计算
         {
             try
             {
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
                 if (!WriteKeysCheck()) { return; }
                 string[] text = MuMuJsonEditor.FindKeyValues(KeysListcomboBox.SelectedValue.ToString());
                 if (!MuMuJsonEditor.AreAllKeysMissing(text, MyMuMuJosn)){
@@ -1309,6 +1997,8 @@ namespace MuMu坐标计算
         {
             try
             {
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
                 if (!WriteKeysCheck()) { return; }
                 if (bindKey2 == null) { MessageBox.Show("当前未绑定按键，请检查您的设置！");return; }
                 string[] text = { bindKey2.KeyValue.ToString() };
@@ -1335,6 +2025,8 @@ namespace MuMu坐标计算
         {
             try
             {
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
                 //判定备注沿用对按钮状态设置的备注，懒得改了
                 if (JsonTempNowFlag == 0 && (JsonTemp.Count == 1 || JsonTemp.Count == 0))
                 {
@@ -1377,6 +2069,8 @@ namespace MuMu坐标计算
         //重做按钮，恢复到撤销之前的文件状态
         private void Redobutton_Click(object sender, EventArgs e)
         {
+            //修改前无论如何，重置下拉框
+            InitializeFileNamecomboBox(fileNamecomboBox, true);
             //判定备注沿用对按钮状态设置的备注，懒得改了
             if (JsonTempNowFlag == 0 && (JsonTemp.Count == 1 || JsonTemp.Count == 0))
             {
@@ -1411,7 +2105,7 @@ namespace MuMu坐标计算
                 return;
             }
         }
-
+        //打开拖入json文件文件夹
         private void OpenJsonFolderbutton_Click(object sender, EventArgs e)
         {
             try
@@ -1428,6 +2122,630 @@ namespace MuMu坐标计算
             catch (Exception ex)
             {
                 MessageBox.Show($"无效路径！发生错误：{ex.Message}");
+            }
+        }
+        //打开预设键位文件夹
+        private void openPresetJsonFolderbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 获取程序根目录
+                string rootPath = Application.StartupPath;
+
+                // 拼接data文件夹路径
+                string dataFolderPath = Path.Combine(rootPath, "data");
+
+                // 如果文件夹不存在则创建
+                if (!Directory.Exists(dataFolderPath))
+                {
+                    Directory.CreateDirectory(dataFolderPath);
+                }
+
+                // 打开文件夹
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = dataFolderPath,
+                    UseShellExecute = true,  // 启用Shell功能
+                    Verb = "open"
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"操作失败：{ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        //更新文件地址
+        private void updateJsonUrltextBox(string jsonFilePath) {
+            try
+            {
+                JsonUrltextBox.Text = jsonFilePath;
+                JsonUrltextBox.TextAlign = HorizontalAlignment.Right;
+                JsonUrltextBox.SelectionStart = JsonUrltextBox.TextLength;
+                JsonUrltextBox.ScrollToCaret();
+                if (File.Exists(jsonFilePath)) {
+                    lastWriteTime = File.GetLastWriteTimeUtc(jsonFilePath);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //打开文件名下拉框
+        private void fileNamecomboBox_DropDown(object sender, EventArgs e)
+        {
+            try
+            {
+                //初始化设置：
+                InitializeFileNamecomboBox(fileNamecomboBox, false);
+                fileNameSearchtextBox.Visible = true;
+                fileNameSearchtextBox.BringToFront();
+                fileNameSearchtextBox.Focus();
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"刷新失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+        }
+        //关闭文件名下拉框
+        private void fileNamecomboBox_DropDownClosed(object sender, EventArgs e)
+        {
+            try
+            {
+                fileNameSearchtextBox.Visible = false;
+                if (fileNamecomboBox.SelectedValue != null)
+                {
+                    //选项不为空
+                    //如果未发生变化则直接取消
+                    if (fileNamecomboBox.SelectedValue.ToString() == JsonUrltextBox.Text)
+                    {
+                        flagSleepFlushingFilename = true;
+                        return;
+                    }
+                    if (Undobutton.Enabled||Redobutton.Enabled)
+                    {
+                        DialogResult result = MessageBox.Show(reloadingTip, "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (result == DialogResult.No)
+                        {
+                            //直接初始化并利用初始化尝试还原上一个选项
+                            InitializeFileNamecomboBox(fileNamecomboBox, true);
+                            updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                            flagSleepFlushingFilename = true;
+                            return;
+                        }
+                    }
+                    updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                    string filePath = @JsonUrltextBox.Text;
+                    if (File.Exists(filePath))
+                    {
+                        Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(filePath);
+                        Properties.Settings.Default.Save();
+                        lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                        //bool readflag = true;
+                        //if (MyMuMuJosn == "") { readflag = false; }
+                        MyMuMuJosn = File.ReadAllText(filePath);
+                        BackupAfterJsonReading();
+                        autoReadBindkey3PP();
+                        flagSleepFlushingFilename = true;
+                        //if (readflag)
+                        //{
+                        //    MessageBox.Show("加载成功！");
+                        //}
+                    }
+                    else
+                    {
+                        MessageBox.Show("不存在的Json文件，请检查您的文件路径。");
+                        //直接初始化并利用初始化尝试还原上一个选项
+                        fileNameSearchtextBox.Text = "";
+                        InitializeFileNamecomboBox(fileNamecomboBox, true);
+                        updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                        flagSleepFlushingFilename = true;
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                flagSleepFlushingFilename = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+
+        }
+        //这里实现搜索功能
+        private void fileNameSearchtextBox_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //无论如何，先关闭计时器
+                flagSleepFlushingFilename = false;
+                if (string.IsNullOrWhiteSpace(fileNameSearchtextBox.Text))
+                {
+                    InitializeFileNamecomboBox(fileNamecomboBox,false);
+                }
+                else
+                {
+                    InitializeFileNamecomboBoxAndSearch(fileNamecomboBox, fileNameSearchtextBox.Text,true);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //这里实现打开下拉框后再更新
+        private void CheckSearchTextVtimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (fileNamecomboBox.DroppedDown & flagSleepFlushingFilename){
+                    if (!string.IsNullOrWhiteSpace(fileNameSearchtextBox.Text))
+                    {
+                        InitializeFileNamecomboBoxAndSearch(fileNamecomboBox, fileNameSearchtextBox.Text,false);
+                    }
+                }
+                if (KeysListcomboBox.DroppedDown & flagSleepFlushingFilename) {
+                    if (!string.IsNullOrWhiteSpace(KeysListSearchtextBox.Text)) {
+                        InitializeKeysComboBoxAndSearch(KeysListcomboBox, KeysListSearchtextBox.Text,false);
+                    } 
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //修改包名选择项
+        private void packageNamecomboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (flagFlushingFilename){
+                    InitializeFileNamecomboBox(fileNamecomboBox, false);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //修改文件名选择项
+        private void fileNamecomboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (flagFlushingFilename) {
+                    if (fileNamecomboBox.SelectedValue != null)
+                    {
+                        //如果未发生变化则直接取消
+                        if (fileNamecomboBox.SelectedValue.ToString() == JsonUrltextBox.Text) { return; }
+                        if (Undobutton.Enabled || Redobutton.Enabled)
+                        {
+                            DialogResult result = MessageBox.Show(reloadingTip, "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                            if (result == DialogResult.No)
+                            {
+                                //直接初始化并利用初始化尝试还原上一个选项
+                                InitializeFileNamecomboBox(fileNamecomboBox, true);
+                                updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                                return;
+                            }
+                        }
+                        updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                        string filePath = @JsonUrltextBox.Text;
+                        if (File.Exists(filePath))
+                        {
+                            Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(filePath);
+                            Properties.Settings.Default.Save();
+                            lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                            //bool readflag = true;
+                            //if (MyMuMuJosn == "") { readflag = false; }
+                            MyMuMuJosn = File.ReadAllText(filePath);
+                            BackupAfterJsonReading();
+                            autoReadBindkey3PP();
+                            //if (readflag)
+                            //{
+                            //    MessageBox.Show("加载成功！");
+                            //}
+                        }else{
+                            MessageBox.Show("不存在的Json文件，请检查您的文件路径。");
+                            //直接初始化并利用初始化尝试还原上一个选项
+                            fileNameSearchtextBox.Text = "";
+                            InitializeFileNamecomboBox(fileNamecomboBox, true);
+                            updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                            return;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //将当前按键文件导入data文件夹中
+        private void importKeymapbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // 获取程序根目录
+                string rootPath = Application.StartupPath;
+                // 拼接data文件夹路径
+                string dataFolderPath = Path.Combine(rootPath, "data");
+                // 如果文件夹不存在则创建
+                if (!Directory.Exists(dataFolderPath))
+                {
+                    Directory.CreateDirectory(dataFolderPath);
+                }
+                string fileName = fileNamecomboBox.Text.ToString()+".json";
+                string filePath = Path.Combine(dataFolderPath, fileName);
+                if (MyMuMuJosn == "" || filePath == "")
+                {
+                    MessageBox.Show("请先加载一个Json文件！");
+                    return;
+                }
+                if (File.Exists(filePath))
+                {
+                    //已有同名文件
+                    DialogResult result = MessageBox.Show("检测到data文件夹中已有同名文件，是否覆盖？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes) {
+                        File.WriteAllText(filePath, MyMuMuJosn);
+                        MessageBox.Show("覆写成功！请点开下拉框选择你需要的文件。");
+                    }
+                }
+                else {
+                    //没有同名文件则创建并写入
+                    File.WriteAllText(filePath, MyMuMuJosn,Encoding.UTF8);
+                    MessageBox.Show("导入成功！请点开下拉框选择你需要的文件。");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //实现文件名搜索框中回车等按键交互
+        private void fileNameSearchtextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                //处理回车键，关闭下拉框
+                if (e.KeyCode == Keys.Enter)
+                {
+                    fileNamecomboBox.DroppedDown = false;
+                    Application.DoEvents();
+                    e.Handled = true; // 阻止默认行为
+                }
+                // 处理方向键向上，选项向上跳一位
+                else if (e.KeyCode == Keys.Up)
+                {
+
+                    if (fileNamecomboBox.SelectedIndex > 0)
+                    {
+                        //防止触发selecteditem更新
+                        flagFlushingFilename = false;
+                        fileNamecomboBox.SelectedIndex -= 1;
+                    }
+                    e.Handled = true;
+                }
+                // 处理方向键向下，选项向下跳一位
+                else if (e.KeyCode == Keys.Down)
+                {
+                    if (fileNamecomboBox.SelectedIndex < (fileNamecomboBox.Items.Count - 1))
+                    {
+                        //防止触发selecteditem更新
+                        flagFlushingFilename = false;
+                        fileNamecomboBox.SelectedIndex += 1;
+                    }
+                    e.Handled = true;
+                }
+                //恢复判定
+                flagFlushingFilename = true;
+            }
+            catch (Exception ex)
+            {
+                //恢复判定
+                flagFlushingFilename = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+
+        private void KeysListSearchtextBox_KeyDown(object sender, KeyEventArgs e)
+        {
+            try
+            {
+                //处理回车键，关闭下拉框
+                if (e.KeyCode == Keys.Enter)
+                {
+                    KeysListcomboBox.DroppedDown = false;
+                    Application.DoEvents();
+                    e.Handled = true; // 阻止默认行为
+                }
+                // 处理方向键向上，选项向上跳一位
+                else if (e.KeyCode == Keys.Up)
+                {
+
+                    if (KeysListcomboBox.SelectedIndex > 0)
+                    {
+                        KeysListcomboBox.SelectedIndex -= 1;
+                    }
+                    e.Handled = true;
+                }
+                // 处理方向键向下，选项向下跳一位
+                else if (e.KeyCode == Keys.Down)
+                {
+                    if (KeysListcomboBox.SelectedIndex < (KeysListcomboBox.Items.Count - 1))
+                    {
+                        KeysListcomboBox.SelectedIndex += 1;
+                    }
+                    e.Handled = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //尝试获取json文件夹
+        private void TryGetJsonFileFolder()
+        {
+            try
+            {
+                string MuMuJsonFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)+ @"\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig";
+                if (Directory.Exists(MuMuJsonFolder))
+                {
+                    //Process.Start(MuMuJsonFolder); // 直接打开文件夹
+                    //保存文件夹路径
+                    Properties.Settings.Default.JsonFolderPath = MuMuJsonFolder;
+                    Properties.Settings.Default.Save();
+                    InitializeFileNamecomboBox(fileNamecomboBox, false);
+                    //初始化后加载
+                    if (fileNamecomboBox.SelectedValue != null)
+                    {
+                        updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                        string filePath = @JsonUrltextBox.Text;
+                        if (File.Exists(filePath))
+                        {
+                            Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(filePath);
+                            Properties.Settings.Default.Save();
+                            lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                            MyMuMuJosn = File.ReadAllText(filePath);
+                            BackupAfterJsonReading();
+                        }
+                    }
+
+                }
+                else
+                {
+                    //MessageBox.Show("未成功获取MuMu模拟器储存按键文件的文件夹！\n请手动导入一个keymapConfig文件夹内的按键文件以获取路径！");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+
+        }
+
+        private void TryGetJsonFileFolderbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (MyMuMuJosn != "")
+                {
+                    DialogResult result = MessageBox.Show("该操作会导致尚未保存的修改被覆盖，是否继续？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.No){return;}
+                }
+                string MuMuJsonFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + @"\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig";
+                if (Directory.Exists(MuMuJsonFolder))
+                {
+                    Process.Start(MuMuJsonFolder); // 直接打开文件夹
+                    //保存文件夹路径
+                    Properties.Settings.Default.JsonFolderPath = MuMuJsonFolder;
+                    Properties.Settings.Default.Save();
+                    InitializeFileNamecomboBox(fileNamecomboBox, false);
+                    //初始化后加载
+                    if (fileNamecomboBox.SelectedValue != null)
+                    {
+                        updateJsonUrltextBox(fileNamecomboBox.SelectedValue.ToString());
+                        string filePath = @JsonUrltextBox.Text;
+                        if (File.Exists(filePath))
+                        {
+                            Properties.Settings.Default.JsonFolderPath = Path.GetDirectoryName(filePath);
+                            Properties.Settings.Default.Save();
+                            lastWriteTime = File.GetLastWriteTimeUtc(filePath);
+                            MyMuMuJosn = File.ReadAllText(filePath);
+                            BackupAfterJsonReading();
+                        }
+                    }
+
+                }
+                else
+                {
+                    MessageBox.Show("未成功获取MuMu模拟器储存按键文件的文件夹！\n请手动导入一个keymapConfig文件夹内的按键文件以获取路径！");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        //选择分辨率类型
+        private void resolutionTypecomboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (flagFlushingResolutionType) {
+                    //防止重复触发selecteditemchanged
+                    flagFlushingResolution = false;
+                    flagFXFYChanged = false;
+                    //获取预设类型
+                    string[] ResolutionTypesValues = resolutionTypes.Values.ToArray();
+                    if (resolutionTypecomboBox.SelectedValue.ToString() == ResolutionTypesValues[0])
+                    {
+                        //属于平板
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution1.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        resolutioncomboBox.SelectedIndex = 0;
+
+                    }
+                    else if (resolutionTypecomboBox.SelectedValue.ToString() == ResolutionTypesValues[1])
+                    {
+                        //属于手机
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution2.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        resolutioncomboBox.SelectedIndex = 0;
+                    }
+                    else if (resolutionTypecomboBox.SelectedValue.ToString() == ResolutionTypesValues[2])
+                    {
+                        //属于超宽屏
+                        deleteUDResolutionbutton.Visible = false;
+                        resolutioncomboBox.DataSource = resolution3.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        resolutioncomboBox.SelectedIndex = 0;
+                    }
+                    else if(resolutionTypecomboBox.SelectedValue.ToString() == ResolutionTypesValues[3])
+                    {
+                        //属于自定义
+                        deleteUDResolutionbutton.Visible = true;
+                        Dictionary<string, string> resolution4 = new Dictionary<string, string> { };
+                        if (!string.IsNullOrWhiteSpace(Settings.Default.resolution4String))
+                        {
+                            resolution4 = MuMuJsonEditor.StringToResolution(Settings.Default.resolution4String);
+                        }
+                        else
+                        {
+                            resolutioncomboBox.DataSource = null;
+                            resolutioncomboBox.Items.Clear();
+                            resolutioncomboBox.Items.Add("暂无自定义分辨率！");
+                            resolutioncomboBox.SelectedIndex = 0;
+                            //退出时恢复开关
+                            flagFlushingResolution = true;
+                            flagFXFYChanged = true;
+                            return;
+                        }
+                        resolutioncomboBox.DataSource = resolution4.ToList();
+                        resolutioncomboBox.DisplayMember = "Key";
+                        resolutioncomboBox.ValueMember = "Value";
+                        resolutioncomboBox.SelectedIndex = 0;
+                    }
+                    if (resolutioncomboBox.SelectedValue != null)
+                    {
+                        string[] value = resolutioncomboBox.SelectedValue.ToString().Split(',');
+                        FXtextBox.Text = value[0];
+                        FYtextBox.Text = value[1];
+                    }
+                    //退出时恢复开关
+                    flagFlushingResolution = true;
+                    flagFXFYChanged = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                //退出时恢复开关
+                flagFlushingResolution = true;
+                flagFXFYChanged = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+
+            
+        }
+        //选择分辨率
+        private void resolutioncomboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                //防止重复触发textChanged
+                flagFXFYChanged = false;
+                if (resolutioncomboBox.SelectedValue != null&flagFlushingResolution) {
+                    string[] value = resolutioncomboBox.SelectedValue.ToString().Split(',');
+                    FXtextBox.Text = value[0];
+                    FYtextBox.Text = value[1];
+                }
+                //退出时恢复开关
+                flagFXFYChanged = true;
+            }
+            catch (Exception ex)
+            {
+                //退出时恢复开关
+                flagFXFYChanged = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+
+        private void deleteUDResolutionbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //防止重复触发selecteditemchanged
+                flagFlushingResolution = false;
+                flagFlushingResolutionType = false;
+                //获取预设类型
+                string[] ResolutionTypesValues = resolutionTypes.Values.ToArray();
+                string key = FXtextBox.Text + "x" + FYtextBox.Text;
+                if (resolutionTypecomboBox.SelectedValue.ToString() == ResolutionTypesValues[3]) {
+                    Dictionary<string, string> resolution4 = new Dictionary<string, string> { };
+                    if (!string.IsNullOrWhiteSpace(Settings.Default.resolution4String))
+                    {
+                        resolution4 = MuMuJsonEditor.StringToResolution(Settings.Default.resolution4String);
+                    }
+                    else {
+                        //恢复开关
+                        flagFlushingResolution = true;
+                        flagFlushingResolutionType = true;
+                        return;
+                    }
+                    if (resolution4.ContainsKey(key))
+                    {
+                        resolution4.Remove(key);
+                    }
+                    Settings.Default.resolution4String = MuMuJsonEditor.ResolutionToString(resolution4);
+                    Settings.Default.Save();
+                    InitializeResolutioncomboBox(resolutioncomboBox);
+                    //恢复开关
+                    flagFlushingResolution = true;
+                    flagFlushingResolutionType = true;
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                //恢复开关
+                flagFlushingResolution = true;
+                flagFlushingResolutionType = true;
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+
+        private void deleteDataJsonbutton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (KeysListcomboBox.SelectedValue != null) {
+                    string[]item= KeysListcomboBox.SelectedItem.ToString().Split(',');
+                    DialogResult result = MessageBox.Show($"该操作会导致data文件夹下的 {item[1].Substring(0, item[1].Length-1)} 文件被删除，是否继续？", "警告", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.No) { return; }
+                    string filePath = @KeysListcomboBox.SelectedValue.ToString();
+                    if (File.Exists(filePath)) {
+                        File.Delete(filePath);
+                        MessageBox.Show("文件已删除");
+                    }
+                    else
+                    {
+                        MessageBox.Show("文件不存在！");
+                    }
+                    InitializeKeysComboBox(KeysListcomboBox);
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
             }
         }
     }

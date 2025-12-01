@@ -61,7 +61,6 @@ namespace MuMu坐标计算
             this.CcheckBox = new System.Windows.Forms.CheckBox();
             this.Ctimer = new System.Windows.Forms.Timer(this.components);
             this.JsonopenFileDialog = new System.Windows.Forms.OpenFileDialog();
-            this.LoadJson = new System.Windows.Forms.Button();
             this.JsonUrltextBox = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.ButtontextBox = new System.Windows.Forms.TextBox();
@@ -110,6 +109,19 @@ namespace MuMu坐标计算
             this.Undobutton = new System.Windows.Forms.Button();
             this.Redobutton = new System.Windows.Forms.Button();
             this.OpenJsonFolderbutton = new System.Windows.Forms.Button();
+            this.replaceKeycheckBox = new System.Windows.Forms.CheckBox();
+            this.packageNamecomboBox = new System.Windows.Forms.ComboBox();
+            this.fileNamecomboBox = new System.Windows.Forms.ComboBox();
+            this.importKeymapbutton = new System.Windows.Forms.Button();
+            this.openPresetJsonFolderbutton = new System.Windows.Forms.Button();
+            this.fileNameSearchtextBox = new System.Windows.Forms.TextBox();
+            this.KeysListSearchtextBox = new System.Windows.Forms.TextBox();
+            this.CheckSearchTextVtimer = new System.Windows.Forms.Timer(this.components);
+            this.TryGetJsonFileFolderbutton = new System.Windows.Forms.Button();
+            this.resolutionTypecomboBox = new System.Windows.Forms.ComboBox();
+            this.resolutioncomboBox = new System.Windows.Forms.ComboBox();
+            this.deleteUDResolutionbutton = new System.Windows.Forms.Button();
+            this.deleteDataJsonbutton = new System.Windows.Forms.Button();
             this.FunctiontabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
@@ -157,15 +169,15 @@ namespace MuMu坐标计算
             // FYlabel
             // 
             this.FYlabel.AutoSize = true;
-            this.FYlabel.Location = new System.Drawing.Point(14, 94);
+            this.FYlabel.Location = new System.Drawing.Point(104, 119);
             this.FYlabel.Name = "FYlabel";
-            this.FYlabel.Size = new System.Drawing.Size(95, 12);
+            this.FYlabel.Size = new System.Drawing.Size(11, 12);
             this.FYlabel.TabIndex = 7;
-            this.FYlabel.Text = "分辨率Y（竖）：";
+            this.FYlabel.Text = "X";
             // 
             // FYtextBox
             // 
-            this.FYtextBox.Location = new System.Drawing.Point(110, 91);
+            this.FYtextBox.Location = new System.Drawing.Point(116, 116);
             this.FYtextBox.Name = "FYtextBox";
             this.FYtextBox.Size = new System.Drawing.Size(42, 21);
             this.FYtextBox.TabIndex = 6;
@@ -176,15 +188,15 @@ namespace MuMu坐标计算
             // FXlabel
             // 
             this.FXlabel.AutoSize = true;
-            this.FXlabel.Location = new System.Drawing.Point(14, 51);
+            this.FXlabel.Location = new System.Drawing.Point(11, 119);
             this.FXlabel.Name = "FXlabel";
-            this.FXlabel.Size = new System.Drawing.Size(95, 12);
+            this.FXlabel.Size = new System.Drawing.Size(53, 12);
             this.FXlabel.TabIndex = 5;
-            this.FXlabel.Text = "分辨率X（横）：";
+            this.FXlabel.Text = "分辨率：";
             // 
             // FXtextBox
             // 
-            this.FXtextBox.Location = new System.Drawing.Point(110, 48);
+            this.FXtextBox.Location = new System.Drawing.Point(59, 116);
             this.FXtextBox.Name = "FXtextBox";
             this.FXtextBox.Size = new System.Drawing.Size(42, 21);
             this.FXtextBox.TabIndex = 4;
@@ -233,7 +245,7 @@ namespace MuMu坐标计算
             // FcheckBox
             // 
             this.FcheckBox.AutoSize = true;
-            this.FcheckBox.Location = new System.Drawing.Point(16, 32);
+            this.FcheckBox.Location = new System.Drawing.Point(13, 97);
             this.FcheckBox.Name = "FcheckBox";
             this.FcheckBox.Size = new System.Drawing.Size(48, 16);
             this.FcheckBox.TabIndex = 12;
@@ -265,21 +277,21 @@ namespace MuMu坐标计算
             // 
             // FSave
             // 
-            this.FSave.Location = new System.Drawing.Point(163, 40);
+            this.FSave.Location = new System.Drawing.Point(163, 116);
             this.FSave.Name = "FSave";
-            this.FSave.Size = new System.Drawing.Size(81, 35);
+            this.FSave.Size = new System.Drawing.Size(41, 21);
             this.FSave.TabIndex = 15;
-            this.FSave.Text = "保存分辨率";
+            this.FSave.Text = "保存";
             this.FSave.UseVisualStyleBackColor = true;
             this.FSave.Click += new System.EventHandler(this.FSave_Click);
             // 
             // FLoad
             // 
-            this.FLoad.Location = new System.Drawing.Point(163, 83);
+            this.FLoad.Location = new System.Drawing.Point(208, 116);
             this.FLoad.Name = "FLoad";
-            this.FLoad.Size = new System.Drawing.Size(81, 35);
+            this.FLoad.Size = new System.Drawing.Size(41, 21);
             this.FLoad.TabIndex = 16;
-            this.FLoad.Text = "读取分辨率";
+            this.FLoad.Text = "读取";
             this.FLoad.UseVisualStyleBackColor = true;
             this.FLoad.Click += new System.EventHandler(this.FLoad_Click_1);
             // 
@@ -387,16 +399,6 @@ namespace MuMu坐标计算
             this.JsonopenFileDialog.Filter = "JSON (*.json)|*.json";
             this.JsonopenFileDialog.Title = "打开要修改的按键Json文件";
             // 
-            // LoadJson
-            // 
-            this.LoadJson.Location = new System.Drawing.Point(446, 12);
-            this.LoadJson.Name = "LoadJson";
-            this.LoadJson.Size = new System.Drawing.Size(41, 21);
-            this.LoadJson.TabIndex = 28;
-            this.LoadJson.Text = "加载";
-            this.LoadJson.UseVisualStyleBackColor = true;
-            this.LoadJson.Click += new System.EventHandler(this.LoadJson_Click);
-            // 
             // JsonUrltextBox
             // 
             this.JsonUrltextBox.Location = new System.Drawing.Point(158, 13);
@@ -409,7 +411,7 @@ namespace MuMu坐标计算
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(253, 46);
+            this.label6.Location = new System.Drawing.Point(253, 69);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(65, 12);
             this.label6.TabIndex = 31;
@@ -418,7 +420,7 @@ namespace MuMu坐标计算
             // ButtontextBox
             // 
             this.ButtontextBox.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            this.ButtontextBox.Location = new System.Drawing.Point(311, 43);
+            this.ButtontextBox.Location = new System.Drawing.Point(311, 66);
             this.ButtontextBox.Name = "ButtontextBox";
             this.ButtontextBox.Size = new System.Drawing.Size(40, 21);
             this.ButtontextBox.TabIndex = 32;
@@ -427,7 +429,7 @@ namespace MuMu坐标计算
             // 
             // CheckButton
             // 
-            this.CheckButton.Location = new System.Drawing.Point(400, 42);
+            this.CheckButton.Location = new System.Drawing.Point(400, 65);
             this.CheckButton.Name = "CheckButton";
             this.CheckButton.Size = new System.Drawing.Size(42, 23);
             this.CheckButton.TabIndex = 33;
@@ -438,7 +440,7 @@ namespace MuMu坐标计算
             // label8
             // 
             this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(14, 126);
+            this.label8.Location = new System.Drawing.Point(14, 149);
             this.label8.Name = "label8";
             this.label8.Size = new System.Drawing.Size(179, 12);
             this.label8.TabIndex = 37;
@@ -456,7 +458,7 @@ namespace MuMu坐标计算
             // 
             // RewriteAndSaveButton
             // 
-            this.RewriteAndSaveButton.Location = new System.Drawing.Point(357, 70);
+            this.RewriteAndSaveButton.Location = new System.Drawing.Point(357, 109);
             this.RewriteAndSaveButton.Name = "RewriteAndSaveButton";
             this.RewriteAndSaveButton.Size = new System.Drawing.Size(85, 23);
             this.RewriteAndSaveButton.TabIndex = 39;
@@ -566,7 +568,7 @@ namespace MuMu坐标计算
             // QhrxlinkLabel
             // 
             this.QhrxlinkLabel.AutoSize = true;
-            this.QhrxlinkLabel.Location = new System.Drawing.Point(14, 344);
+            this.QhrxlinkLabel.Location = new System.Drawing.Point(14, 375);
             this.QhrxlinkLabel.Name = "QhrxlinkLabel";
             this.QhrxlinkLabel.Size = new System.Drawing.Size(77, 12);
             this.QhrxlinkLabel.TabIndex = 49;
@@ -576,7 +578,7 @@ namespace MuMu坐标计算
             // 
             // ReadPPButton
             // 
-            this.ReadPPButton.Location = new System.Drawing.Point(357, 42);
+            this.ReadPPButton.Location = new System.Drawing.Point(357, 65);
             this.ReadPPButton.Name = "ReadPPButton";
             this.ReadPPButton.Size = new System.Drawing.Size(42, 23);
             this.ReadPPButton.TabIndex = 50;
@@ -586,21 +588,24 @@ namespace MuMu坐标计算
             // 
             // KeysListcomboBox
             // 
+            this.KeysListcomboBox.DropDownHeight = 100;
             this.KeysListcomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.KeysListcomboBox.FormattingEnabled = true;
-            this.KeysListcomboBox.Location = new System.Drawing.Point(448, 43);
+            this.KeysListcomboBox.IntegralHeight = false;
+            this.KeysListcomboBox.Location = new System.Drawing.Point(448, 66);
             this.KeysListcomboBox.Name = "KeysListcomboBox";
             this.KeysListcomboBox.Size = new System.Drawing.Size(127, 20);
             this.KeysListcomboBox.TabIndex = 51;
             this.KeysListcomboBox.DropDown += new System.EventHandler(this.KeysListcomboBox_DropDown);
+            this.KeysListcomboBox.DropDownClosed += new System.EventHandler(this.KeysListcomboBox_DropDownClosed);
             // 
             // WriteKeysButton
             // 
-            this.WriteKeysButton.Location = new System.Drawing.Point(448, 71);
+            this.WriteKeysButton.Location = new System.Drawing.Point(448, 94);
             this.WriteKeysButton.Name = "WriteKeysButton";
-            this.WriteKeysButton.Size = new System.Drawing.Size(127, 23);
+            this.WriteKeysButton.Size = new System.Drawing.Size(76, 23);
             this.WriteKeysButton.TabIndex = 52;
-            this.WriteKeysButton.Text = "写入并保存常用键";
+            this.WriteKeysButton.Text = "写入所有键";
             this.WriteKeysButton.UseVisualStyleBackColor = true;
             this.WriteKeysButton.Click += new System.EventHandler(this.WriteKeysButton_Click);
             // 
@@ -609,7 +614,7 @@ namespace MuMu坐标计算
             this.FunctiontabControl.Controls.Add(this.tabPage1);
             this.FunctiontabControl.Controls.Add(this.tabPage2);
             this.FunctiontabControl.Controls.Add(this.tabPage3);
-            this.FunctiontabControl.Location = new System.Drawing.Point(16, 160);
+            this.FunctiontabControl.Location = new System.Drawing.Point(16, 184);
             this.FunctiontabControl.Name = "FunctiontabControl";
             this.FunctiontabControl.SelectedIndex = 0;
             this.FunctiontabControl.Size = new System.Drawing.Size(563, 181);
@@ -776,7 +781,7 @@ namespace MuMu坐标计算
             // 
             // DeleteRepeatKeysButton
             // 
-            this.DeleteRepeatKeysButton.Location = new System.Drawing.Point(448, 100);
+            this.DeleteRepeatKeysButton.Location = new System.Drawing.Point(448, 123);
             this.DeleteRepeatKeysButton.Name = "DeleteRepeatKeysButton";
             this.DeleteRepeatKeysButton.Size = new System.Drawing.Size(63, 23);
             this.DeleteRepeatKeysButton.TabIndex = 54;
@@ -786,7 +791,7 @@ namespace MuMu坐标计算
             // 
             // DeleteRangeRDkeysButton
             // 
-            this.DeleteRangeRDkeysButton.Location = new System.Drawing.Point(515, 100);
+            this.DeleteRangeRDkeysButton.Location = new System.Drawing.Point(515, 123);
             this.DeleteRangeRDkeysButton.Name = "DeleteRangeRDkeysButton";
             this.DeleteRangeRDkeysButton.Size = new System.Drawing.Size(63, 23);
             this.DeleteRangeRDkeysButton.TabIndex = 55;
@@ -797,7 +802,7 @@ namespace MuMu坐标计算
             // Button2textBox
             // 
             this.Button2textBox.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            this.Button2textBox.Location = new System.Drawing.Point(484, 127);
+            this.Button2textBox.Location = new System.Drawing.Point(484, 150);
             this.Button2textBox.Name = "Button2textBox";
             this.Button2textBox.Size = new System.Drawing.Size(40, 21);
             this.Button2textBox.TabIndex = 57;
@@ -807,7 +812,7 @@ namespace MuMu坐标计算
             // label16
             // 
             this.label16.AutoSize = true;
-            this.label16.Location = new System.Drawing.Point(446, 130);
+            this.label16.Location = new System.Drawing.Point(446, 153);
             this.label16.Name = "label16";
             this.label16.Size = new System.Drawing.Size(41, 12);
             this.label16.TabIndex = 56;
@@ -815,7 +820,7 @@ namespace MuMu坐标计算
             // 
             // ReadPP2Button
             // 
-            this.ReadPP2Button.Location = new System.Drawing.Point(530, 126);
+            this.ReadPP2Button.Location = new System.Drawing.Point(530, 149);
             this.ReadPP2Button.Name = "ReadPP2Button";
             this.ReadPP2Button.Size = new System.Drawing.Size(48, 23);
             this.ReadPP2Button.TabIndex = 58;
@@ -825,18 +830,18 @@ namespace MuMu坐标计算
             // 
             // WriteKeyButton
             // 
-            this.WriteKeyButton.Location = new System.Drawing.Point(448, 155);
+            this.WriteKeyButton.Location = new System.Drawing.Point(448, 178);
             this.WriteKeyButton.Name = "WriteKeyButton";
-            this.WriteKeyButton.Size = new System.Drawing.Size(127, 23);
+            this.WriteKeyButton.Size = new System.Drawing.Size(76, 23);
             this.WriteKeyButton.TabIndex = 59;
-            this.WriteKeyButton.Text = "写入并保存单个键";
+            this.WriteKeyButton.Text = "写入单个键";
             this.WriteKeyButton.UseVisualStyleBackColor = true;
             this.WriteKeyButton.Click += new System.EventHandler(this.WriteKeyButton_Click);
             // 
             // autoReadcheckBox
             // 
             this.autoReadcheckBox.AutoSize = true;
-            this.autoReadcheckBox.Location = new System.Drawing.Point(255, 122);
+            this.autoReadcheckBox.Location = new System.Drawing.Point(255, 159);
             this.autoReadcheckBox.Name = "autoReadcheckBox";
             this.autoReadcheckBox.Size = new System.Drawing.Size(96, 16);
             this.autoReadcheckBox.TabIndex = 60;
@@ -847,7 +852,7 @@ namespace MuMu坐标计算
             // Button3textBox
             // 
             this.Button3textBox.ImeMode = System.Windows.Forms.ImeMode.Disable;
-            this.Button3textBox.Location = new System.Drawing.Point(363, 99);
+            this.Button3textBox.Location = new System.Drawing.Point(363, 136);
             this.Button3textBox.Name = "Button3textBox";
             this.Button3textBox.Size = new System.Drawing.Size(40, 21);
             this.Button3textBox.TabIndex = 62;
@@ -857,7 +862,7 @@ namespace MuMu坐标计算
             // label17
             // 
             this.label17.AutoSize = true;
-            this.label17.Location = new System.Drawing.Point(253, 104);
+            this.label17.Location = new System.Drawing.Point(253, 141);
             this.label17.Name = "label17";
             this.label17.Size = new System.Drawing.Size(113, 12);
             this.label17.TabIndex = 61;
@@ -867,14 +872,14 @@ namespace MuMu坐标计算
             // 
             this.keyTypelistcomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.keyTypelistcomboBox.FormattingEnabled = true;
-            this.keyTypelistcomboBox.Location = new System.Drawing.Point(254, 71);
+            this.keyTypelistcomboBox.Location = new System.Drawing.Point(254, 110);
             this.keyTypelistcomboBox.Name = "keyTypelistcomboBox";
             this.keyTypelistcomboBox.Size = new System.Drawing.Size(97, 20);
             this.keyTypelistcomboBox.TabIndex = 63;
             // 
             // Undobutton
             // 
-            this.Undobutton.Location = new System.Drawing.Point(490, 12);
+            this.Undobutton.Location = new System.Drawing.Point(448, 12);
             this.Undobutton.Name = "Undobutton";
             this.Undobutton.Size = new System.Drawing.Size(41, 21);
             this.Undobutton.TabIndex = 64;
@@ -884,7 +889,7 @@ namespace MuMu坐标计算
             // 
             // Redobutton
             // 
-            this.Redobutton.Location = new System.Drawing.Point(534, 12);
+            this.Redobutton.Location = new System.Drawing.Point(492, 12);
             this.Redobutton.Name = "Redobutton";
             this.Redobutton.Size = new System.Drawing.Size(41, 21);
             this.Redobutton.TabIndex = 65;
@@ -894,20 +899,161 @@ namespace MuMu坐标计算
             // 
             // OpenJsonFolderbutton
             // 
-            this.OpenJsonFolderbutton.Location = new System.Drawing.Point(254, 144);
+            this.OpenJsonFolderbutton.Location = new System.Drawing.Point(537, 11);
             this.OpenJsonFolderbutton.Name = "OpenJsonFolderbutton";
-            this.OpenJsonFolderbutton.Size = new System.Drawing.Size(97, 23);
+            this.OpenJsonFolderbutton.Size = new System.Drawing.Size(41, 23);
             this.OpenJsonFolderbutton.TabIndex = 66;
-            this.OpenJsonFolderbutton.Text = "快捷打开文件夹";
+            this.OpenJsonFolderbutton.Text = "打开";
             this.OpenJsonFolderbutton.UseVisualStyleBackColor = true;
             this.OpenJsonFolderbutton.Click += new System.EventHandler(this.OpenJsonFolderbutton_Click);
+            // 
+            // replaceKeycheckBox
+            // 
+            this.replaceKeycheckBox.AutoSize = true;
+            this.replaceKeycheckBox.Location = new System.Drawing.Point(254, 91);
+            this.replaceKeycheckBox.Name = "replaceKeycheckBox";
+            this.replaceKeycheckBox.Size = new System.Drawing.Size(96, 16);
+            this.replaceKeycheckBox.TabIndex = 67;
+            this.replaceKeycheckBox.Text = "强制替换按键";
+            this.replaceKeycheckBox.UseVisualStyleBackColor = true;
+            // 
+            // packageNamecomboBox
+            // 
+            this.packageNamecomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.packageNamecomboBox.FormattingEnabled = true;
+            this.packageNamecomboBox.Location = new System.Drawing.Point(110, 40);
+            this.packageNamecomboBox.Name = "packageNamecomboBox";
+            this.packageNamecomboBox.Size = new System.Drawing.Size(68, 20);
+            this.packageNamecomboBox.TabIndex = 68;
+            this.packageNamecomboBox.SelectedIndexChanged += new System.EventHandler(this.packageNamecomboBox_SelectedIndexChanged);
+            // 
+            // fileNamecomboBox
+            // 
+            this.fileNamecomboBox.DropDownHeight = 200;
+            this.fileNamecomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.fileNamecomboBox.FormattingEnabled = true;
+            this.fileNamecomboBox.IntegralHeight = false;
+            this.fileNamecomboBox.Location = new System.Drawing.Point(184, 40);
+            this.fileNamecomboBox.Name = "fileNamecomboBox";
+            this.fileNamecomboBox.Size = new System.Drawing.Size(258, 20);
+            this.fileNamecomboBox.TabIndex = 69;
+            this.fileNamecomboBox.DropDown += new System.EventHandler(this.fileNamecomboBox_DropDown);
+            this.fileNamecomboBox.SelectedIndexChanged += new System.EventHandler(this.fileNamecomboBox_SelectedIndexChanged);
+            this.fileNamecomboBox.DropDownClosed += new System.EventHandler(this.fileNamecomboBox_DropDownClosed);
+            // 
+            // importKeymapbutton
+            // 
+            this.importKeymapbutton.Location = new System.Drawing.Point(448, 38);
+            this.importKeymapbutton.Name = "importKeymapbutton";
+            this.importKeymapbutton.Size = new System.Drawing.Size(63, 23);
+            this.importKeymapbutton.TabIndex = 70;
+            this.importKeymapbutton.Text = "→导入↓";
+            this.importKeymapbutton.UseVisualStyleBackColor = true;
+            this.importKeymapbutton.Click += new System.EventHandler(this.importKeymapbutton_Click);
+            // 
+            // openPresetJsonFolderbutton
+            // 
+            this.openPresetJsonFolderbutton.Location = new System.Drawing.Point(515, 38);
+            this.openPresetJsonFolderbutton.Name = "openPresetJsonFolderbutton";
+            this.openPresetJsonFolderbutton.Size = new System.Drawing.Size(63, 23);
+            this.openPresetJsonFolderbutton.TabIndex = 71;
+            this.openPresetJsonFolderbutton.Text = "打开↓";
+            this.openPresetJsonFolderbutton.UseVisualStyleBackColor = true;
+            this.openPresetJsonFolderbutton.Click += new System.EventHandler(this.openPresetJsonFolderbutton_Click);
+            // 
+            // fileNameSearchtextBox
+            // 
+            this.fileNameSearchtextBox.Location = new System.Drawing.Point(184, 19);
+            this.fileNameSearchtextBox.Name = "fileNameSearchtextBox";
+            this.fileNameSearchtextBox.Size = new System.Drawing.Size(258, 21);
+            this.fileNameSearchtextBox.TabIndex = 72;
+            this.fileNameSearchtextBox.Visible = false;
+            this.fileNameSearchtextBox.TextChanged += new System.EventHandler(this.fileNameSearchtextBox_TextChanged);
+            this.fileNameSearchtextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.fileNameSearchtextBox_KeyDown);
+            // 
+            // KeysListSearchtextBox
+            // 
+            this.KeysListSearchtextBox.Location = new System.Drawing.Point(448, 45);
+            this.KeysListSearchtextBox.Name = "KeysListSearchtextBox";
+            this.KeysListSearchtextBox.Size = new System.Drawing.Size(127, 21);
+            this.KeysListSearchtextBox.TabIndex = 73;
+            this.KeysListSearchtextBox.Visible = false;
+            this.KeysListSearchtextBox.TextChanged += new System.EventHandler(this.KeysListSearchtextBox_TextChanged);
+            this.KeysListSearchtextBox.KeyDown += new System.Windows.Forms.KeyEventHandler(this.KeysListSearchtextBox_KeyDown);
+            // 
+            // CheckSearchTextVtimer
+            // 
+            this.CheckSearchTextVtimer.Enabled = true;
+            this.CheckSearchTextVtimer.Tick += new System.EventHandler(this.CheckSearchTextVtimer_Tick);
+            // 
+            // TryGetJsonFileFolderbutton
+            // 
+            this.TryGetJsonFileFolderbutton.Location = new System.Drawing.Point(15, 29);
+            this.TryGetJsonFileFolderbutton.Name = "TryGetJsonFileFolderbutton";
+            this.TryGetJsonFileFolderbutton.Size = new System.Drawing.Size(89, 23);
+            this.TryGetJsonFileFolderbutton.TabIndex = 74;
+            this.TryGetJsonFileFolderbutton.Text = "重新获取路径";
+            this.TryGetJsonFileFolderbutton.UseVisualStyleBackColor = true;
+            this.TryGetJsonFileFolderbutton.Click += new System.EventHandler(this.TryGetJsonFileFolderbutton_Click);
+            // 
+            // resolutionTypecomboBox
+            // 
+            this.resolutionTypecomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.resolutionTypecomboBox.FormattingEnabled = true;
+            this.resolutionTypecomboBox.Location = new System.Drawing.Point(12, 67);
+            this.resolutionTypecomboBox.Name = "resolutionTypecomboBox";
+            this.resolutionTypecomboBox.Size = new System.Drawing.Size(68, 20);
+            this.resolutionTypecomboBox.TabIndex = 75;
+            this.resolutionTypecomboBox.SelectedIndexChanged += new System.EventHandler(this.resolutionTypecomboBox_SelectedIndexChanged);
+            // 
+            // resolutioncomboBox
+            // 
+            this.resolutioncomboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.resolutioncomboBox.FormattingEnabled = true;
+            this.resolutioncomboBox.Location = new System.Drawing.Point(84, 67);
+            this.resolutioncomboBox.Name = "resolutioncomboBox";
+            this.resolutioncomboBox.Size = new System.Drawing.Size(155, 20);
+            this.resolutioncomboBox.TabIndex = 76;
+            this.resolutioncomboBox.SelectedIndexChanged += new System.EventHandler(this.resolutioncomboBox_SelectedIndexChanged);
+            // 
+            // deleteUDResolutionbutton
+            // 
+            this.deleteUDResolutionbutton.Location = new System.Drawing.Point(84, 90);
+            this.deleteUDResolutionbutton.Name = "deleteUDResolutionbutton";
+            this.deleteUDResolutionbutton.Size = new System.Drawing.Size(49, 23);
+            this.deleteUDResolutionbutton.TabIndex = 77;
+            this.deleteUDResolutionbutton.Text = "删除";
+            this.deleteUDResolutionbutton.UseVisualStyleBackColor = true;
+            this.deleteUDResolutionbutton.Visible = false;
+            this.deleteUDResolutionbutton.Click += new System.EventHandler(this.deleteUDResolutionbutton_Click);
+            // 
+            // deleteDataJsonbutton
+            // 
+            this.deleteDataJsonbutton.Location = new System.Drawing.Point(528, 94);
+            this.deleteDataJsonbutton.Name = "deleteDataJsonbutton";
+            this.deleteDataJsonbutton.Size = new System.Drawing.Size(50, 23);
+            this.deleteDataJsonbutton.TabIndex = 78;
+            this.deleteDataJsonbutton.Text = "删除";
+            this.deleteDataJsonbutton.UseVisualStyleBackColor = true;
+            this.deleteDataJsonbutton.Click += new System.EventHandler(this.deleteDataJsonbutton_Click);
             // 
             // Form1
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(590, 366);
+            this.ClientSize = new System.Drawing.Size(590, 398);
+            this.Controls.Add(this.deleteDataJsonbutton);
+            this.Controls.Add(this.deleteUDResolutionbutton);
+            this.Controls.Add(this.resolutioncomboBox);
+            this.Controls.Add(this.resolutionTypecomboBox);
+            this.Controls.Add(this.FXtextBox);
+            this.Controls.Add(this.TryGetJsonFileFolderbutton);
+            this.Controls.Add(this.openPresetJsonFolderbutton);
+            this.Controls.Add(this.importKeymapbutton);
+            this.Controls.Add(this.fileNamecomboBox);
+            this.Controls.Add(this.packageNamecomboBox);
+            this.Controls.Add(this.replaceKeycheckBox);
             this.Controls.Add(this.OpenJsonFolderbutton);
             this.Controls.Add(this.Redobutton);
             this.Controls.Add(this.Undobutton);
@@ -933,7 +1079,6 @@ namespace MuMu坐标计算
             this.Controls.Add(this.ButtontextBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.JsonUrltextBox);
-            this.Controls.Add(this.LoadJson);
             this.Controls.Add(this.TOPcheckBox);
             this.Controls.Add(this.FLoad);
             this.Controls.Add(this.FSave);
@@ -941,11 +1086,12 @@ namespace MuMu坐标计算
             this.Controls.Add(this.FYlabel);
             this.Controls.Add(this.FYtextBox);
             this.Controls.Add(this.FXlabel);
-            this.Controls.Add(this.FXtextBox);
+            this.Controls.Add(this.fileNameSearchtextBox);
+            this.Controls.Add(this.KeysListSearchtextBox);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "MuMu摸点小助手2.8";
+            this.Text = "MuMu摸点小助手2.8.1";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
@@ -994,7 +1140,6 @@ namespace MuMu坐标计算
         private System.Windows.Forms.CheckBox CcheckBox;
         private System.Windows.Forms.Timer Ctimer;
         private System.Windows.Forms.OpenFileDialog JsonopenFileDialog;
-        private System.Windows.Forms.Button LoadJson;
         private System.Windows.Forms.TextBox JsonUrltextBox;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox ButtontextBox;
@@ -1043,6 +1188,19 @@ namespace MuMu坐标计算
         private System.Windows.Forms.Button Undobutton;
         private System.Windows.Forms.Button Redobutton;
         private System.Windows.Forms.Button OpenJsonFolderbutton;
+        private System.Windows.Forms.CheckBox replaceKeycheckBox;
+        private System.Windows.Forms.ComboBox packageNamecomboBox;
+        private System.Windows.Forms.ComboBox fileNamecomboBox;
+        private System.Windows.Forms.Button importKeymapbutton;
+        private System.Windows.Forms.Button openPresetJsonFolderbutton;
+        private System.Windows.Forms.TextBox fileNameSearchtextBox;
+        private System.Windows.Forms.TextBox KeysListSearchtextBox;
+        private System.Windows.Forms.Timer CheckSearchTextVtimer;
+        private System.Windows.Forms.Button TryGetJsonFileFolderbutton;
+        private System.Windows.Forms.ComboBox resolutionTypecomboBox;
+        private System.Windows.Forms.ComboBox resolutioncomboBox;
+        private System.Windows.Forms.Button deleteUDResolutionbutton;
+        private System.Windows.Forms.Button deleteDataJsonbutton;
     }
 }
 

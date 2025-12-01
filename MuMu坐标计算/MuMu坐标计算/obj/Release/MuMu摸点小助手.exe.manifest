@@ -55,14 +55,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MuMu摸点小助手.exe" size="193000">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MuMu摸点小助手.exe" size="213992">
       <assemblyIdentity name="MuMu摸点小助手" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>eWfsE/Ud+Y9WviIztobxcrtmONmZCL9j1AK+cvlDnO4=</dsig:DigestValue>
+        <dsig:DigestValue>attTolFBONdfm0MmrL9iqJCCSpfDR6VePWPkh9pkAvw=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
@@ -159,13 +159,13 @@
       <dsig:DigestValue>LU/EPVSIxT+Y/gN0gxOuGrBCw44C5oKblFOdy1gAtxs=</dsig:DigestValue>
     </hash>
   </file>
-  <file name="MuMu摸点小助手.exe.config" size="1751">
+  <file name="MuMu摸点小助手.exe.config" size="1871">
     <hash>
       <dsig:Transforms>
         <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
       </dsig:Transforms>
       <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-      <dsig:DigestValue>PSjkFzYny12cllCNd2+rCszCqstmkfBDahWkpxn8NiQ=</dsig:DigestValue>
+      <dsig:DigestValue>sAhSLwSUWl4+GTTfdoJ1IBFz8o0VfGvjdCaYK8YmwDM=</dsig:DigestValue>
     </hash>
   </file>
 </asmv1:assembly>

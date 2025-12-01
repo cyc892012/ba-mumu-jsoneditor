@@ -82,5 +82,17 @@ namespace MuMu坐标计算.Properties {
                 this["JsonFolderPath"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string resolution4String {
+            get {
+                return ((string)(this["resolution4String"]));
+            }
+            set {
+                this["resolution4String"] = value;
+            }
+        }
     }
 }
