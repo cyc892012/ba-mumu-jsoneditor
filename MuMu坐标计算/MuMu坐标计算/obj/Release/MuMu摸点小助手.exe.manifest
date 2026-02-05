@@ -55,14 +55,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MuMu摸点小助手.exe" size="213992">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="MuMu摸点小助手.exe" size="223720">
       <assemblyIdentity name="MuMu摸点小助手" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>attTolFBONdfm0MmrL9iqJCCSpfDR6VePWPkh9pkAvw=</dsig:DigestValue>
+        <dsig:DigestValue>CP2j4TmFBuSDsCK6ev+r8N2deTxzIkpOw3iiYdnX1dU=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

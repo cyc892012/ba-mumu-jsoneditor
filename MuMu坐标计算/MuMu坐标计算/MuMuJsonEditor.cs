@@ -237,19 +237,19 @@ namespace MuMu坐标计算
                     //查找 "virtual_key": +键值 的起始位置
                     int baseIndex = myJson.IndexOf("\"virtual_key\": " + e.KeyValue);
                     //查找 ( 定位坐标起始位置
-                    int StartIndex = myJson.IndexOf("(",baseIndex);
+                    int StartIndex = myJson.IndexOf("(", baseIndex);
                     //查找 "type" 定位键位终点位置
                     int NextIndex = myJson.IndexOf("\"type\"", baseIndex);
                     //坐标起始位置越界，该宏键位不存在坐标。
                     if (StartIndex > NextIndex) { return null; }
                     //查找 , 定位坐标中间位置
-                    int MidIndex = myJson.IndexOf(",",StartIndex);
+                    int MidIndex = myJson.IndexOf(",", StartIndex);
                     //查找 ) 定位坐标结束位置
                     int EndIndex = myJson.IndexOf(")", MidIndex);
                     string keyX = myJson.Substring(StartIndex + 1, MidIndex - StartIndex - 1);
                     string keyY = myJson.Substring(MidIndex + 1, EndIndex - MidIndex - 1);
 
-                    return new string[] {keyX,keyY };
+                    return new string[] { keyX, keyY };
                 }
                 else
                 {
@@ -261,7 +261,7 @@ namespace MuMu坐标计算
             {
                 MessageBox.Show($"错误：{ex.Message}");
             }
-            return null;  
+            return null;
         }
         //读取Json文件指定按键代码
         public static string ReadKey(string filePath, KeyEventArgs e) {
@@ -289,7 +289,7 @@ namespace MuMu坐标计算
                 //向下查找 "type" ，再向下查找 } 定位结尾
                 int endIndex = text.IndexOf("}", text.IndexOf("\"type\":", baseIndex));
                 if (endIndex == -1) { return null; }
-                return keystart+text.Substring(startIndex, endIndex - startIndex + 1);
+                return keystart + text.Substring(startIndex, endIndex - startIndex + 1);
             }
             catch (Exception ex)
             {
@@ -306,14 +306,14 @@ namespace MuMu坐标计算
 
                 // 查找"keymaps":的起始位置
                 int startIndex = text.IndexOf("\"keymaps\":");
-                if (startIndex == -1) { return null; } else { startIndex +=  12; }
+                if (startIndex == -1) { return null; } else { startIndex += 12; }
                 // 查找"param":的起始位置
                 int endIndex = text.IndexOf("\"param\":");
                 if (endIndex == -1) { return null; }
                 //向上找到结尾的“}”
                 endIndex = text.LastIndexOf("}", endIndex);
                 if (endIndex == -1) { return null; }
-                return text.Substring(startIndex, endIndex-startIndex+1);
+                return text.Substring(startIndex, endIndex - startIndex + 1);
 
             }
             catch (Exception ex)
@@ -323,7 +323,7 @@ namespace MuMu坐标计算
             return null;
         }
         //将完整按键写入Json文件
-        public static string WriteKeys(string keys,string myJson) {
+        public static string WriteKeys(string keys, string myJson) {
 
             try
             {
@@ -336,7 +336,7 @@ namespace MuMu坐标计算
                     //判定为没有任何按键的空文件
                     return myJson.Substring(0, startIndex) + keys + myJson.Substring(startIndex);
                 }
-                return myJson.Substring(0,startIndex)+keys+ ","+myJson.Substring(startIndex);
+                return myJson.Substring(0, startIndex) + keys + "," + myJson.Substring(startIndex);
 
             }
             catch (Exception ex)
@@ -502,7 +502,7 @@ namespace MuMu坐标计算
             return repeatKeyValues.ToArray(); // 返回冲突键值
         }
         //寻找并返回指定区域的按键坐标、键名、键值
-        public static List<(double RelX, double RelY, string Text, string VirtualKey)> FindRangeKeyValues(double[] rangeLT, double[]rangeRD,string myJson) {
+        public static List<(double RelX, double RelY, string Text, string VirtualKey)> FindRangeKeyValues(double[] rangeLT, double[] rangeRD, string myJson) {
             List<string> rangeKeyValues = new List<string>();
             try
             {
@@ -529,11 +529,11 @@ namespace MuMu坐标计算
             }
         }
         //通过键值定位按键并删除
-        public static string DeleteKey(string key,string myJson) {
+        public static string DeleteKey(string key, string myJson) {
             try
             {
                 //查找 "virtual_key": +键值 的起始位置
-                int baseIndex = myJson.IndexOf("\"virtual_key\": "+key);
+                int baseIndex = myJson.IndexOf("\"virtual_key\": " + key);
                 //查找 "param": 定位尾端
                 int fileEndIndex = myJson.IndexOf("\"param\":");
                 //通过起始位置，定位上下边界的位置：
@@ -566,8 +566,8 @@ namespace MuMu坐标计算
                 {
                     startIndex += 1;//特殊情况时虽然是尾端按键但是范围不需要覆盖逗号
                 }
-                if (startIndex == -1||endIndex == -1) { return null; } 
-                return myJson.Substring(0, startIndex+1) +  myJson.Substring(endIndex+1);
+                if (startIndex == -1 || endIndex == -1) { return null; }
+                return myJson.Substring(0, startIndex + 1) + myJson.Substring(endIndex + 1);
             }
             catch (Exception ex)
             {
@@ -576,7 +576,7 @@ namespace MuMu坐标计算
             return null;
         }
         //通过键值批量删除键位
-        public static string DeleteKeys(string[]repeatKeyValues,string myJson)
+        public static string DeleteKeys(string[] repeatKeyValues, string myJson)
         {
             try
             {
@@ -592,14 +592,14 @@ namespace MuMu坐标计算
             return null;
         }
         //生成指定类型的键位
-        public static string CreateKey(string keyType, KeyEventArgs bindKey, string keyX, string keyY,string scan_code) {
+        public static string CreateKey(string keyType, KeyEventArgs bindKey, string keyX, string keyY, string scan_code) {
             try
             {
                 string keystart = "\r\n        ";
                 if (keyType == typeClick)
                 {
                     //生成单击按键
-                    return keystart+$"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyX},\r\n                    \"rel_y\": {keyY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyX},\r\n                \"rel_y\": {keyY}\r\n            }},\r\n            \"type\": \"Click\"\r\n        }}";
+                    return keystart + $"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyX},\r\n                    \"rel_y\": {keyY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyX},\r\n                \"rel_y\": {keyY}\r\n            }},\r\n            \"type\": \"Click\"\r\n        }}";
                 }
                 else if (keyType == typeMacro) {
                     //调整一下宏指牌按键的位置，触底向反方向偏移3%，未触底向正方向偏移3%
@@ -609,7 +609,7 @@ namespace MuMu坐标计算
                     if ((double.Parse(keyX) + keyPositionSet) < 1) { keyPositionX = double.Parse(keyX) + keyPositionSet; } else { keyPositionX = double.Parse(keyX) - keyPositionSet; }
                     if ((double.Parse(keyY) + keyPositionSet) < 1) { keyPositionY = double.Parse(keyY) + keyPositionSet; } else { keyPositionY = double.Parse(keyY) - keyPositionSet; }
                     //生成宏指牌按键
-                    return keystart+$"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyPositionX},\r\n                    \"rel_y\": {keyPositionY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"press_actions\": [\r\n                \"start_loop:until_release\",\r\n                \"curve_first_point_sleep_time:1\",\r\n                \"curve_last_point_sleep_time:1\",\r\n                \"curve_rel:mouse;({keyX},{keyY})\",\r\n                \"curve_release\",\r\n                \"stop_loop\"\r\n            ],\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyPositionX},\r\n                \"rel_y\": {keyPositionY}\r\n            }},\r\n            \"release_actions\": [\r\n\r\n            ],\r\n            \"type\": \"Macro\"\r\n        }}";
+                    return keystart + $"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyPositionX},\r\n                    \"rel_y\": {keyPositionY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"press_actions\": [\r\n                \"start_loop:until_release\",\r\n                \"curve_first_point_sleep_time:1\",\r\n                \"curve_last_point_sleep_time:1\",\r\n                \"curve_rel:mouse;({keyX},{keyY})\",\r\n                \"curve_release\",\r\n                \"stop_loop\"\r\n            ],\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyPositionX},\r\n                \"rel_y\": {keyPositionY}\r\n            }},\r\n            \"release_actions\": [\r\n\r\n            ],\r\n            \"type\": \"Macro\"\r\n        }}";
                 }
             }
             catch (Exception ex)
@@ -623,7 +623,7 @@ namespace MuMu坐标计算
             {
                 if (resolution.Count == 0) { return ""; }
                 else {
-                    string resolutiongString="";
+                    string resolutiongString = "";
                     foreach (var item in resolution) {
                         string[] value = item.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
                         resolutiongString += item.Key + "," + value[0] + "," + value[1] + "V";
@@ -649,7 +649,7 @@ namespace MuMu坐标计算
                     foreach (var item in temp)
                     {
                         string[] temp2 = item.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                        resolution.Add(temp2[0], temp2[1]+ "," + temp2[2]);
+                        resolution.Add(temp2[0], temp2[1] + "," + temp2[2]);
                     }
                     return resolution;
                 }
@@ -660,7 +660,68 @@ namespace MuMu坐标计算
                 return null;
             }
 
-            
+
+        }
+        public static int[] CalculateAspectRatio(int width, int height)
+        {
+            int gcd = GCD(width, height);
+            int[] result = new int[2] { width / gcd, height / gcd };
+            return result;
+        }
+
+        private static int GCD(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
+        }
+        public static double[] CalculateCoordinatesMouseToSimulator(int FX, int FY, int SX, int SY, int mX, int mY) {
+            //FX,FY为模拟器分辨率，,SX,SY为屏幕分辨率,mX,mY为鼠标当前坐标
+            double[] result = new double[3] { 0.0, 0.0 ,0.0};
+            //先求比例，按不同情况分类
+            int[] Fratio = CalculateAspectRatio(FX, FY);
+            int[] Sratio = CalculateAspectRatio(SX, SY);
+            if (Fratio[0] == Sratio[0] && Fratio[1] == Sratio[1])
+            {
+                //同比例，则直接换算
+                double a = (double)FX / SX;
+                result[0] = mX * a;
+                result[1] = mY * a;
+                return result;
+            }
+            else {
+                //不同比例，则分情况换算
+                double Fa = (double)FX / FY;
+                double Sa = (double)SX / SY;
+                if (Fa > Sa)
+                {
+                    //模拟器的宽为准，例：屏幕16:9，模拟器20:9超宽屏
+                    double a = (double)FX / SX;
+                    result[0] = mX * a;
+                    double y = FY / a;//y轴模拟器部分占据整个屏幕的像素点数
+                    result[2] = (SY - y) / 2;//上下的偏移量
+                    result[1] = (mY - result[2])*a;//此时需要对Y轴范围做限制，防止破框。
+                    if (result[1] < 0) result[1] = 0.0;//y轴强制复原在起点
+                    if (result[1] > FY) result[1] = FY - 1.0;//y轴强制复原在顶点
+                    return result;
+                }
+                else if (Fa < Sa) {
+                    //模拟器的高为准，例：屏幕16:9，模拟器4:3
+                    double a = (double)FY / SY;
+                    result[1] = mY * a;
+                    double x = FX / a;//x轴部分占据整个屏幕的像素点数
+                    result[2] = (SX - x) / 2;//左右的偏移量
+                    result[0] = (mX - result[2]) * a;//此时需要对X轴范围做限制，防止破框
+                    if (result[0] < 0) result[0] = 0.0;//x轴强制复原在起点
+                    if (result[0] > FX) result[0] = FX - 1.0;//y轴强制复原在顶点
+                    return result;
+                }
+            }
+            return result;
         }
         /*废案备份：
          * 之前考虑的是覆写一定位数的坐标，这样不用定位后续内容，但mumu模拟器保存下来的坐标位数不确定，最终还是舍弃了这个方案
@@ -733,5 +794,7 @@ namespace MuMu坐标计算
             byte[] compressedBytes = Convert.FromBase64String(base64Data);
             return Decompress(compressedBytes);
         }
+        
     }
+
 }

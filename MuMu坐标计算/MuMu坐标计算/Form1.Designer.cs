@@ -96,6 +96,23 @@ namespace MuMu坐标计算
             this.label12 = new System.Windows.Forms.Label();
             this.label13 = new System.Windows.Forms.Label();
             this.label14 = new System.Windows.Forms.Label();
+            this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.nXtextBox = new System.Windows.Forms.TextBox();
+            this.label23 = new System.Windows.Forms.Label();
+            this.nYtextBox = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.mXtextBox = new System.Windows.Forms.TextBox();
+            this.label21 = new System.Windows.Forms.Label();
+            this.mYtextBox = new System.Windows.Forms.TextBox();
+            this.label22 = new System.Windows.Forms.Label();
+            this.CreateKeyscheckBox = new System.Windows.Forms.CheckBox();
+            this.CreateKeyOncecheckBox = new System.Windows.Forms.CheckBox();
+            this.SXtextBox = new System.Windows.Forms.TextBox();
+            this.btnGetScreenResolution = new System.Windows.Forms.Button();
+            this.label19 = new System.Windows.Forms.Label();
+            this.SYtextBox = new System.Windows.Forms.TextBox();
+            this.label20 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
             this.DeleteRepeatKeysButton = new System.Windows.Forms.Button();
             this.DeleteRangeRDkeysButton = new System.Windows.Forms.Button();
             this.Button2textBox = new System.Windows.Forms.TextBox();
@@ -122,10 +139,15 @@ namespace MuMu坐标计算
             this.resolutioncomboBox = new System.Windows.Forms.ComboBox();
             this.deleteUDResolutionbutton = new System.Windows.Forms.Button();
             this.deleteDataJsonbutton = new System.Windows.Forms.Button();
+            this.Ktimer = new System.Windows.Forms.Timer(this.components);
+            this.label25 = new System.Windows.Forms.Label();
+            this.Tip1label = new System.Windows.Forms.Label();
+            this.Tip2label = new System.Windows.Forms.Label();
             this.FunctiontabControl.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.SuspendLayout();
             // 
             // KXtextBox
@@ -614,6 +636,7 @@ namespace MuMu坐标计算
             this.FunctiontabControl.Controls.Add(this.tabPage1);
             this.FunctiontabControl.Controls.Add(this.tabPage2);
             this.FunctiontabControl.Controls.Add(this.tabPage3);
+            this.FunctiontabControl.Controls.Add(this.tabPage4);
             this.FunctiontabControl.Location = new System.Drawing.Point(16, 184);
             this.FunctiontabControl.Name = "FunctiontabControl";
             this.FunctiontabControl.SelectedIndex = 0;
@@ -778,6 +801,180 @@ namespace MuMu坐标计算
             this.label14.Size = new System.Drawing.Size(95, 12);
             this.label14.TabIndex = 19;
             this.label14.Text = "区域右下坐标Y：";
+            // 
+            // tabPage4
+            // 
+            this.tabPage4.Controls.Add(this.Tip2label);
+            this.tabPage4.Controls.Add(this.Tip1label);
+            this.tabPage4.Controls.Add(this.label25);
+            this.tabPage4.Controls.Add(this.nXtextBox);
+            this.tabPage4.Controls.Add(this.label23);
+            this.tabPage4.Controls.Add(this.nYtextBox);
+            this.tabPage4.Controls.Add(this.label24);
+            this.tabPage4.Controls.Add(this.mXtextBox);
+            this.tabPage4.Controls.Add(this.label21);
+            this.tabPage4.Controls.Add(this.mYtextBox);
+            this.tabPage4.Controls.Add(this.label22);
+            this.tabPage4.Controls.Add(this.CreateKeyscheckBox);
+            this.tabPage4.Controls.Add(this.CreateKeyOncecheckBox);
+            this.tabPage4.Controls.Add(this.SXtextBox);
+            this.tabPage4.Controls.Add(this.btnGetScreenResolution);
+            this.tabPage4.Controls.Add(this.label19);
+            this.tabPage4.Controls.Add(this.SYtextBox);
+            this.tabPage4.Controls.Add(this.label20);
+            this.tabPage4.Controls.Add(this.label18);
+            this.tabPage4.Location = new System.Drawing.Point(4, 22);
+            this.tabPage4.Name = "tabPage4";
+            this.tabPage4.Size = new System.Drawing.Size(555, 155);
+            this.tabPage4.TabIndex = 3;
+            this.tabPage4.Text = "全屏快速摸点";
+            this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // nXtextBox
+            // 
+            this.nXtextBox.Location = new System.Drawing.Point(90, 129);
+            this.nXtextBox.Name = "nXtextBox";
+            this.nXtextBox.Size = new System.Drawing.Size(42, 21);
+            this.nXtextBox.TabIndex = 30;
+            this.nXtextBox.Text = "0";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(136, 133);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(17, 12);
+            this.label23.TabIndex = 33;
+            this.label23.Text = "：";
+            // 
+            // nYtextBox
+            // 
+            this.nYtextBox.Location = new System.Drawing.Point(154, 129);
+            this.nYtextBox.Name = "nYtextBox";
+            this.nYtextBox.Size = new System.Drawing.Size(42, 21);
+            this.nYtextBox.TabIndex = 32;
+            this.nYtextBox.Text = "0";
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(3, 132);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(89, 12);
+            this.label24.TabIndex = 31;
+            this.label24.Text = "对应内部坐标：";
+            // 
+            // mXtextBox
+            // 
+            this.mXtextBox.Location = new System.Drawing.Point(89, 97);
+            this.mXtextBox.Name = "mXtextBox";
+            this.mXtextBox.Size = new System.Drawing.Size(42, 21);
+            this.mXtextBox.TabIndex = 25;
+            this.mXtextBox.Text = "0";
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(135, 101);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(17, 12);
+            this.label21.TabIndex = 28;
+            this.label21.Text = "：";
+            // 
+            // mYtextBox
+            // 
+            this.mYtextBox.Location = new System.Drawing.Point(153, 97);
+            this.mYtextBox.Name = "mYtextBox";
+            this.mYtextBox.Size = new System.Drawing.Size(42, 21);
+            this.mYtextBox.TabIndex = 27;
+            this.mYtextBox.Text = "0";
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(3, 100);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(89, 12);
+            this.label22.TabIndex = 26;
+            this.label22.Text = "当前鼠标坐标：";
+            // 
+            // CreateKeyscheckBox
+            // 
+            this.CreateKeyscheckBox.AutoSize = true;
+            this.CreateKeyscheckBox.Location = new System.Drawing.Point(90, 70);
+            this.CreateKeyscheckBox.Name = "CreateKeyscheckBox";
+            this.CreateKeyscheckBox.Size = new System.Drawing.Size(72, 16);
+            this.CreateKeyscheckBox.TabIndex = 24;
+            this.CreateKeyscheckBox.Text = "生成多次";
+            this.CreateKeyscheckBox.UseVisualStyleBackColor = true;
+            this.CreateKeyscheckBox.CheckedChanged += new System.EventHandler(this.CreateKeyscheckBox_CheckedChanged);
+            // 
+            // CreateKeyOncecheckBox
+            // 
+            this.CreateKeyOncecheckBox.AutoSize = true;
+            this.CreateKeyOncecheckBox.Location = new System.Drawing.Point(5, 71);
+            this.CreateKeyOncecheckBox.Name = "CreateKeyOncecheckBox";
+            this.CreateKeyOncecheckBox.Size = new System.Drawing.Size(72, 16);
+            this.CreateKeyOncecheckBox.TabIndex = 23;
+            this.CreateKeyOncecheckBox.Text = "生成一次";
+            this.CreateKeyOncecheckBox.UseVisualStyleBackColor = true;
+            this.CreateKeyOncecheckBox.CheckedChanged += new System.EventHandler(this.CreateKeyOncecheckBox_CheckedChanged);
+            // 
+            // SXtextBox
+            // 
+            this.SXtextBox.Location = new System.Drawing.Point(78, 43);
+            this.SXtextBox.Name = "SXtextBox";
+            this.SXtextBox.Size = new System.Drawing.Size(42, 21);
+            this.SXtextBox.TabIndex = 17;
+            this.SXtextBox.Text = "0";
+            this.SXtextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CheckTextBox_KeyPress);
+            // 
+            // btnGetScreenResolution
+            // 
+            this.btnGetScreenResolution.Location = new System.Drawing.Point(188, 43);
+            this.btnGetScreenResolution.Name = "btnGetScreenResolution";
+            this.btnGetScreenResolution.Size = new System.Drawing.Size(65, 21);
+            this.btnGetScreenResolution.TabIndex = 21;
+            this.btnGetScreenResolution.Text = "自动获取";
+            this.btnGetScreenResolution.UseVisualStyleBackColor = true;
+            this.btnGetScreenResolution.Click += new System.EventHandler(this.btnGetScreenResolution_Click);
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(124, 47);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(11, 12);
+            this.label19.TabIndex = 20;
+            this.label19.Text = "X";
+            // 
+            // SYtextBox
+            // 
+            this.SYtextBox.Location = new System.Drawing.Point(139, 43);
+            this.SYtextBox.Name = "SYtextBox";
+            this.SYtextBox.Size = new System.Drawing.Size(42, 21);
+            this.SYtextBox.TabIndex = 19;
+            this.SYtextBox.Text = "0";
+            this.SYtextBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.CheckTextBox_KeyPress);
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(3, 46);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(77, 12);
+            this.label20.TabIndex = 18;
+            this.label20.Text = "桌面分辨率：";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.ForeColor = System.Drawing.Color.Red;
+            this.label18.Location = new System.Drawing.Point(3, 9);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(407, 12);
+            this.label18.TabIndex = 0;
+            this.label18.Text = "提示：按F11将MuMu模拟器全屏化后可使用该功能，建议将小助手窗口置顶。";
             // 
             // DeleteRepeatKeysButton
             // 
@@ -1037,6 +1234,40 @@ namespace MuMu坐标计算
             this.deleteDataJsonbutton.UseVisualStyleBackColor = true;
             this.deleteDataJsonbutton.Click += new System.EventHandler(this.deleteDataJsonbutton_Click);
             // 
+            // Ktimer
+            // 
+            this.Ktimer.Tick += new System.EventHandler(this.Ktimer_Tick);
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.ForeColor = System.Drawing.Color.Red;
+            this.label25.Location = new System.Drawing.Point(3, 24);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(287, 12);
+            this.label25.TabIndex = 34;
+            this.label25.Text = "提示2：如无法生成按键请以管理员模式启动小助手。";
+            // 
+            // Tip1label
+            // 
+            this.Tip1label.AutoSize = true;
+            this.Tip1label.ForeColor = System.Drawing.Color.Red;
+            this.Tip1label.Location = new System.Drawing.Point(257, 75);
+            this.Tip1label.Name = "Tip1label";
+            this.Tip1label.Size = new System.Drawing.Size(125, 12);
+            this.Tip1label.TabIndex = 35;
+            this.Tip1label.Text = "提示：已关闭键盘监听";
+            // 
+            // Tip2label
+            // 
+            this.Tip2label.AutoSize = true;
+            this.Tip2label.ForeColor = System.Drawing.Color.Red;
+            this.Tip2label.Location = new System.Drawing.Point(257, 93);
+            this.Tip2label.Name = "Tip2label";
+            this.Tip2label.Size = new System.Drawing.Size(167, 12);
+            this.Tip2label.TabIndex = 36;
+            this.Tip2label.Text = "                           ";
+            // 
             // Form1
             // 
             this.AllowDrop = true;
@@ -1091,7 +1322,7 @@ namespace MuMu坐标计算
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
-            this.Text = "MuMu摸点小助手2.8.1";
+            this.Text = "MuMu摸点小助手2.9";
             this.Activated += new System.EventHandler(this.Form1_Activated);
             this.Load += new System.EventHandler(this.Form1_Load);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.Form1_DragDrop);
@@ -1104,6 +1335,8 @@ namespace MuMu坐标计算
             this.tabPage2.PerformLayout();
             this.tabPage3.ResumeLayout(false);
             this.tabPage3.PerformLayout();
+            this.tabPage4.ResumeLayout(false);
+            this.tabPage4.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1201,6 +1434,27 @@ namespace MuMu坐标计算
         private System.Windows.Forms.ComboBox resolutioncomboBox;
         private System.Windows.Forms.Button deleteUDResolutionbutton;
         private System.Windows.Forms.Button deleteDataJsonbutton;
+        private System.Windows.Forms.TabPage tabPage4;
+        private System.Windows.Forms.TextBox SXtextBox;
+        private System.Windows.Forms.Button btnGetScreenResolution;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.TextBox SYtextBox;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.CheckBox CreateKeyscheckBox;
+        private System.Windows.Forms.CheckBox CreateKeyOncecheckBox;
+        private System.Windows.Forms.TextBox nXtextBox;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox nYtextBox;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.TextBox mXtextBox;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TextBox mYtextBox;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Timer Ktimer;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.Label Tip1label;
+        private System.Windows.Forms.Label Tip2label;
     }
 }
 

@@ -54,6 +54,9 @@ namespace MuMu坐标计算
         string lastSelectedFilePath = "";
         //重载文件时的语句
         string reloadingTip = "该操作会导致对当前文件的编辑无法还原，是否继续？";
+        //用于监听键盘按键
+        GlobalKeyboardListener KeyboardlistenerOnce = new GlobalKeyboardListener();
+        GlobalKeyboardListener KeyboardlistenerKeys = new GlobalKeyboardListener();
         //预设按键类型的数据源
         Dictionary<string, string> KeyTypes { get; } = new Dictionary<string, string>{
             {"点击按键","Click" },
@@ -89,7 +92,9 @@ namespace MuMu坐标计算
             {"720x1280","720,1280" }
         };
         Dictionary<string, string> resolution3 { get; } = new Dictionary<string, string>{
+            {"3440x1440","3440,1440"  },
             {"3200x1440","3200,1440"  },
+            {"2560x1080","2560,1080"  },
             {"2400x1080","2400,1080"  },
             {"1920x864","1920,864"  },
             {"1600x720","1600,720"  }
@@ -148,6 +153,95 @@ namespace MuMu坐标计算
             keyTypelistcomboBox.ValueMember = "Value";
             //初始化按键启用
             SetUndobtnAndRedobtnState();
+            //初始化获取屏幕分辨率
+            GetScreenResolution();
+            //初始化两个键盘监听执行函数
+            InitializeKeyboardlistener();
+        }
+        //键盘监听执行初始化函数
+        private void InitializeKeyboardlistener() {
+            //仅生成一次
+            KeyboardlistenerOnce.KeyDownEvent += (msender, key) =>
+            {
+                //MessageBox.Show($"按下了：{key.KeyCode}（虚拟键码：{key.KeyValue}）");
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
+                string filePath = @JsonUrltextBox.Text;
+                if (MyMuMuJosn == "" || filePath == "")
+                {
+                    MessageBox.Show("请先加载一个Json文件！");
+                    return;
+                }
+                //写入
+                string[] keyValues = KeyTypes.Values.ToArray();
+                if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[0])
+                {
+                    //创建点击按键
+                    string mkey = MuMuJsonEditor.CreateKey(keyValues[0], key, JSXtextBox.Text, JSYtextBox.Text, MuMuJsonEditor.GetScanCode(key.KeyCode).ToString());
+                    MyMuMuJosn = MuMuJsonEditor.WriteKeys(mkey, MyMuMuJosn);
+                    if (WriteToJsonAndBackup()) { Tip2label.Text = $"点击按键{key.KeyCode}生成并写入成功！如出现问题请转人工。"; }
+                    CreateKeyOncecheckBox.Checked = false;
+                    KeyboardlistenerOnce.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                }
+                else if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[1])
+                {
+                    //创建宏按键
+                    string mkey = MuMuJsonEditor.CreateKey(keyValues[1], key, JSXtextBox.Text, JSYtextBox.Text, MuMuJsonEditor.GetScanCode(key.KeyCode).ToString());
+                    MyMuMuJosn = MuMuJsonEditor.WriteKeys(mkey, MyMuMuJosn);
+                    if (WriteToJsonAndBackup()) { Tip2label.Text = $"宏指牌按键{key.KeyCode}生成并写入成功！如出现问题请转人工。"; }
+                    CreateKeyOncecheckBox.Checked = false;
+                    KeyboardlistenerOnce.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                }
+                else
+                {
+                    MessageBox.Show("未知错误！我也想知道你是怎么触发这条提示的？？？");
+                    return;
+                }
+                return;
+            };
+            //多次生成
+            KeyboardlistenerKeys.KeyDownEvent += (msender, key) =>
+            {
+                //MessageBox.Show($"按下了：{key.KeyCode}（虚拟键码：{key.KeyValue}）");
+                //修改前无论如何，重置下拉框
+                InitializeFileNamecomboBox(fileNamecomboBox, true);
+                string filePath = @JsonUrltextBox.Text;
+                if (MyMuMuJosn == "" || filePath == "")
+                {
+                    MessageBox.Show("请先加载一个Json文件！");
+                    return;
+                }
+                //写入
+                if (MuMuJsonEditor.FindKey(MyMuMuJosn, key) == -1)
+                {
+                    string[] keyValues = KeyTypes.Values.ToArray();
+                    if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[0])
+                    {
+                        //创建点击按键
+                        string mkey = MuMuJsonEditor.CreateKey(keyValues[0], key, JSXtextBox.Text, JSYtextBox.Text, MuMuJsonEditor.GetScanCode(key.KeyCode).ToString());
+                        MyMuMuJosn = MuMuJsonEditor.WriteKeys(mkey, MyMuMuJosn);
+                        if (WriteToJsonAndBackup()) { Tip2label.Text = $"点击按键{key.KeyCode}生成并写入成功！如出现问题请转人工。"; }
+                    }
+                    else if (keyTypelistcomboBox.SelectedValue.ToString() == keyValues[1])
+                    {
+                        //创建宏按键
+                        string mkey = MuMuJsonEditor.CreateKey(keyValues[1], key, JSXtextBox.Text, JSYtextBox.Text, MuMuJsonEditor.GetScanCode(key.KeyCode).ToString());
+                        MyMuMuJosn = MuMuJsonEditor.WriteKeys(mkey, MyMuMuJosn);
+                        if (WriteToJsonAndBackup()) { Tip2label.Text = $"宏指牌按键{key.KeyCode}生成并写入成功！如出现问题请转人工。"; }
+                    }
+                    else
+                    {
+                        MessageBox.Show("未知错误！我也想知道你是怎么触发这条提示的？？？");
+                        return;
+                    }
+                }
+                else {
+                    Tip2label.Text = $"当前文件已存在按键：{key.KeyCode}！禁止重复生成！";
+                }
+                return;
+            };
         }
         //创建隐藏菜单用于绑定快捷键
         private void InitializeHiddenMenu()
@@ -2745,6 +2839,122 @@ namespace MuMu坐标计算
             }
             catch (Exception ex)
             {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        private void GetScreenResolution() {
+            try
+            {
+                var resolution = Screen.PrimaryScreen.Bounds.Size;
+                SXtextBox.Text = resolution.Width.ToString();
+                SYtextBox.Text = resolution.Height.ToString();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+        private void btnGetScreenResolution_Click(object sender, EventArgs e)
+        {
+            GetScreenResolution();
+        }
+
+        private void testbutton_Click(object sender, EventArgs e)
+        {
+            int[] ratio = MuMuJsonEditor.CalculateAspectRatio(int.Parse(FXtextBox.Text), int.Parse(FYtextBox.Text));
+            MessageBox.Show($"比例：{ratio[0]}:{ratio[1]}");
+        }
+
+        private void CreateKeyOncecheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (CreateKeyOncecheckBox.Checked)
+                {
+                    CreateKeyscheckBox.Checked = false;
+                    KeyboardlistenerKeys.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                    KeyboardlistenerOnce.StartListening();
+                    Tip1label.Text = "提示：已开启键盘监听";
+                }
+                if (CreateKeyOncecheckBox.Checked == true && Ktimer.Enabled == false)
+                {
+                    Ktimer.Enabled = true;
+                }
+                else if (CreateKeyOncecheckBox.Checked == false && Ktimer.Enabled == true)
+                {
+                    Ktimer.Enabled = false;
+                }
+                if(CreateKeyOncecheckBox.Checked == false && CreateKeyscheckBox.Checked == false)
+                {
+                    KeyboardlistenerOnce.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+
+        private void CreateKeyscheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (CreateKeyscheckBox.Checked)
+                {
+                    CreateKeyOncecheckBox.Checked = false;
+                    KeyboardlistenerOnce.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                    KeyboardlistenerKeys.StartListening();
+                    Tip1label.Text = "提示：已开启键盘监听";
+                }
+                if (CreateKeyscheckBox.Checked == true && Ktimer.Enabled == false)
+                {
+                    Ktimer.Enabled = true;
+                }
+                else if (CreateKeyscheckBox.Checked == false && Ktimer.Enabled == true)
+                {
+                    Ktimer.Enabled = false;
+                }
+                if (CreateKeyOncecheckBox.Checked == false&&CreateKeyscheckBox.Checked==false)
+                {
+                    KeyboardlistenerKeys.StopListening();
+                    Tip1label.Text = "提示：已关闭键盘监听";
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"发生错误：{ex.Message}");
+            }
+        }
+
+        private void Ktimer_Tick(object sender, EventArgs e)
+        {
+            try
+            {
+                //FX,FY为模拟器分辨率，,SX,SY为屏幕分辨率,mX,mY为鼠标当前坐标
+                Point mousePosition = Control.MousePosition;
+                mXtextBox.Text = mousePosition.X.ToString();
+                mYtextBox.Text = mousePosition.Y.ToString();
+                int FX = int.Parse(FXtextBox.Text);
+                int FY = int.Parse(FYtextBox.Text);
+                int SX = int.Parse(SXtextBox.Text);
+                int SY = int.Parse(SYtextBox.Text);
+                int mX = int.Parse(mXtextBox.Text);
+                int mY = int.Parse(mYtextBox.Text);
+                double[] result = MuMuJsonEditor.CalculateCoordinatesMouseToSimulator(FX, FY, SX, SY, mX, mY);
+                KXtextBox.Text = result[0].ToString();
+                nXtextBox.Text = result[0].ToString();
+                KYtextBox.Text = result[1].ToString();
+                nYtextBox.Text = result[1].ToString();
+            }
+            catch (Exception ex)
+            {
+                //关闭所有选项和计时器
+                CreateKeyOncecheckBox.Checked = false;
+                CreateKeyscheckBox.Checked = false;
+                Ktimer.Enabled = false;
                 MessageBox.Show($"发生错误：{ex.Message}");
             }
         }
