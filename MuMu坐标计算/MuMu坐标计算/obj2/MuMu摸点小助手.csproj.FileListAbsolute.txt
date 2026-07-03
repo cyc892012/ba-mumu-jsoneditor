@@ -1,0 +1,11 @@
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu摸点小助手.csproj.AssemblyReference.cache
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.AdbTouchForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.Form1.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.IndexBackupForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.MouseTrackForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.Properties.Resources.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.QuickTouchForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.RangeClearForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu坐标计算.WideScreenForm.resources
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu摸点小助手.csproj.GenerateResource.cache
+g:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\obj2\MuMu摸点小助手.csproj.CoreCompileInputs.cache

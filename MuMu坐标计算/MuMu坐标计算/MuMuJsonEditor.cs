@@ -1,15 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
-using System.Security.Policy;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
-using System.Text.RegularExpressions;
-using System.IO;
-using System.Security.Cryptography;
-using System.Runtime.InteropServices;
-using System.IO.Compression;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MuMu坐标计算
 {
@@ -18,505 +16,591 @@ namespace MuMu坐标计算
         //按键类型
         public static string typeClick = "Click";
         public static string typeMacro = "Macro";
+        public static string typeBunchClick = "BunchClick";
+
         [DllImport("user32.dll")]
         private static extern uint MapVirtualKey(uint uCode, uint uMapType);
         [DllImport("user32.dll")]
         private static extern short GetAsyncKeyState(Keys vKey);
+
         // 获取扫描码（十进制）
         public static int GetScanCode(Keys key)
         {
             return (int)MapVirtualKey((uint)key, 0);
         }
+
+        public static int GetScanCodeForMouse(Keys key)
+        {
+            switch (key)
+            {
+                case Keys.LButton: return 1;
+                case Keys.RButton: return 2;
+                case Keys.MButton: return 4;
+                case Keys.XButton1: return 5;
+                case Keys.XButton2: return 6;
+                default: return 0;
+            }
+        }
+
         // 获取当前按下键的扫描码（十进制）
         public static int GetCurrentScanCode()
         {
             Keys keyPressed = GetPressedKey();
             return keyPressed != Keys.None ? GetScanCode(keyPressed) : -1;
         }
+
         // 获取当前按下的键（处理多按键情况）
         private static Keys GetPressedKey()
         {
             foreach (Keys key in Enum.GetValues(typeof(Keys)))
             {
                 if (GetAsyncKeyState(key) < 0)
-                {
                     return key;
-                }
             }
             return Keys.None;
         }
-        //压缩/解压
 
+        // ===== JSON 核心操作（基于 Newtonsoft.Json.Linq） =====
 
+        /// <summary>解析 JSON 字符串为 JObject</summary>
+        private static JObject Parse(string json) => JObject.Parse(json);
 
-        //定位对应按键在Json文件的位置
-        public static int FindKey(string myJson, KeyEventArgs e) {
-            string searchText = "\"virtual_key\": " + e.KeyValue;
-            int startPosition = 0;
-            startPosition = myJson.IndexOf(searchText);
-            return startPosition;
+        /// <summary>序列化 JObject 为标准缩进 JSON，保持4空格缩进、LF换行并控制浮点数精度</summary>
+        private static string Serialize(JObject json)
+        {
+            var sb = new StringBuilder();
+            using (var sw = new LfStringWriter(sb))
+            using (var jtw = new PrecisionJsonWriter(sw))
+            {
+                jtw.Formatting = Formatting.Indented;
+                jtw.Indentation = 4;
+                jtw.IndentChar = ' ';
+                json.WriteTo(jtw);
+            }
+            var result = sb.ToString();
+            if (result.EndsWith("\n"))
+                result = result.Substring(0, result.Length - 1);
+            return result;
         }
+
+        private sealed class LfStringWriter : StringWriter
+        {
+            public LfStringWriter(StringBuilder sb) : base(sb) { }
+            public override string NewLine => "\n";
+        }
+
+        private sealed class PrecisionJsonWriter : JsonTextWriter
+        {
+            public PrecisionJsonWriter(TextWriter textWriter) : base(textWriter) { }
+
+            public override void WriteValue(double value)
+            {
+                WriteRawValue(value.ToString("G16", System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            public override void WriteValue(float value)
+            {
+                WriteRawValue(value.ToString("G9", System.Globalization.CultureInfo.InvariantCulture));
+            }
+        }
+
+        /// <summary>根据 virtual_key 查找按键对象，未找到返回 null</summary>
+        private static JObject GetKeyByVirtualKey(JObject json, int virtualKey)
+        {
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return null;
+            foreach (var item in keymaps)
+            {
+                var keyObj = item as JObject;
+                if (keyObj?["key"]?["virtual_key"]?.Value<int>() == virtualKey)
+                    return keyObj;
+            }
+            return null;
+        }
+
+        /// <summary>根据 key.text 查找按键对象，未找到返回 null</summary>
+        private static JObject GetKeyByText(JObject json, string keyText)
+        {
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return null;
+            foreach (var item in keymaps)
+            {
+                var keyObj = item as JObject;
+                if (keyObj?["key"]?["text"]?.Value<string>() == keyText)
+                    return keyObj;
+            }
+            return null;
+        }
+
+        /// <summary>根据 virtual_key 查找按键在 keymaps 数组中的索引，未找到返回 -1</summary>
+        private static int GetKeyIndexByVirtualKey(JObject json, int virtualKey)
+        {
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return -1;
+            for (int i = 0; i < keymaps.Count; i++)
+            {
+                if (keymaps[i] is JObject keyObj
+                    && keyObj["key"]?["virtual_key"]?.Value<int>() == virtualKey)
+                    return i;
+            }
+            return -1;
+        }
+
+        /// <summary>根据 key.text 查找按键在 keymaps 数组中的索引，未找到返回 -1</summary>
+        private static int GetKeyIndexByText(JObject json, string keyText)
+        {
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return -1;
+            for (int i = 0; i < keymaps.Count; i++)
+            {
+                if (keymaps[i] is JObject keyObj
+                    && keyObj["key"]?["text"]?.Value<string>() == keyText)
+                    return i;
+            }
+            return -1;
+        }
+
+        //定位对应按键在Json文件的位置（返回 keymaps 数组中的索引，-1=未找到）
+        public static int FindKey(string myJson, KeyEventArgs e)
+        {
+            if (string.IsNullOrEmpty(myJson) || e == null) return -1;
+            return GetKeyIndexByVirtualKey(Parse(myJson), e.KeyValue);
+        }
+
+        public static int FindKey(string myJson, string KeyText)
+        {
+            return GetKeyIndexByText(Parse(myJson), KeyText);
+        }
+
         //返回按键类型
         public static string FindType(string myJson, KeyEventArgs e)
         {
-            string Type = "";
-            string searchType = "\"type\":";
-            int key = FindKey(myJson, e);//定位按键坐标
-            int type = myJson.IndexOf(searchType, key);//定位type属性坐标
-            int end = myJson.IndexOf("\"", type + 10);
-            Type = myJson.Substring(type + 9, end - (type + 9));
-            return Type;
+            var key = GetKeyByVirtualKey(Parse(myJson), e.KeyValue);
+            return key?["type"]?.Value<string>() ?? "";
         }
-        //检查对应按键是否符合要求（根据功能需求，目前仅支持单击按键、宏按键）
-        public static bool CheckType(string myJson, KeyEventArgs e) {
-            string Type = FindType(myJson, e);
-            if (Type == typeClick || Type == typeMacro)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        //定位上方X坐标位置
-        public static int FindPreX(string myJson, KeyEventArgs e) {
-            string searchX = "\"rel_x\":";
-            int key = FindKey(myJson, e);
-            int relX = myJson.LastIndexOf(searchX, key);
-            if (relX == -1)
-            {
-                return relX;
-            }
-            else
-            {
-                return relX + 9;
-            }
-        }
-        //定位上方Y坐标位置
-        public static int FindPreY(string myJson, KeyEventArgs e)
+
+        public static string FindType(string myJson, string KeyText)
         {
-            string searchY = "\"rel_y\":";
-            int key = FindKey(myJson, e);
-            int relY = myJson.LastIndexOf(searchY, key);
-            if (relY == -1)
-            {
-                return relY;
-            }
-            else
-            {
-                return relY + 9;
-            }
+            var key = GetKeyByText(Parse(myJson), KeyText);
+            return key?["type"]?.Value<string>() ?? "";
         }
-        //定位下方X坐标位置
-        public static int FindAftX(string myJson, KeyEventArgs e)
+
+        //检查对应按键是否符合要求（目前仅支持 Click 和 Macro）
+        public static bool CheckType(string myJson, KeyEventArgs e)
         {
-            string searchX = "\"rel_x\":";
-            int key = FindKey(myJson, e);
-            int relX = myJson.IndexOf(searchX, key);
-            if (relX == -1)
-            {
-                return relX;
-            }
-            else
-            {
-                return relX + 9;
-            }
+            string type = FindType(myJson, e);
+            return type == typeClick || type == typeMacro || type == typeBunchClick;
         }
-        //定位下方Y坐标位置
-        public static int FindAftY(string myJson, KeyEventArgs e)
+
+        //修改按键坐标（支持 Click 和 Macro）
+        public static string ReKey(string myJson, KeyEventArgs e, string X, string Y)
         {
-            string searchY = "\"rel_y\":";
-            int key = FindKey(myJson, e);
-            int relY = myJson.IndexOf(searchY, key);
-            if (relY == -1)
-            {
-                return relY;
-            }
-            else
-            {
-                return relY + 9;
-            }
-        }
-        //定位X,Y之间分隔符
-        public static int FindSep(string myJson, int start) {
-            string searchSep = ",";
-            return myJson.IndexOf(searchSep, start);
-        }
-        //定位Y坐标结束
-        public static int FindEnd(string myJson, int start) {
-            string searchEnd = "},";
-            return myJson.IndexOf(searchEnd, start);
-        }
-        //定位宏指牌的X起始坐标
-        public static int FindMacroX(string myJson, KeyEventArgs e) {
-            int MacroX = 0;
-            string searchX = "mouse;(";
-            int key = FindKey(myJson, e);
-            MacroX = myJson.IndexOf(searchX, key);
-            if (MacroX == -1)
-            {
-                return MacroX;
-            }
-            else
-            {
-                return MacroX + 7;
-            }
-        }
-        //定位宏指牌的Y坐标结束
-        public static int FindMacroEnd(string myJson, int start) {
-            int MacroEnd = 0;
-            string searchEnd = ")";
-            MacroEnd = myJson.IndexOf(searchEnd, start);
-            return MacroEnd;
-        }
-        //修改单击按键坐标
-        public static string ReKey(string myJson, KeyEventArgs e, string X, string Y) {
+            var json = Parse(myJson);
+            var key = GetKeyByVirtualKey(json, e.KeyValue);
+            if (key == null) return myJson;
 
-            string Type = FindType(myJson, e);
-            //修改单击按键
-            if (Type == typeClick)
+            string type = key["type"]?.Value<string>();
+            if (!double.TryParse(X, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dX) ||
+                !double.TryParse(Y, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dY))
+                return myJson;
+
+            if (type == typeClick)
             {
-                //生成两个坐标模板
-                string rwp = $"\"rel_work_position\": {{\r\n                \"rel_x\": {X},\r\n                \"rel_y\": {Y}\r\n            }},";
-                string rp = $"\"rel_position\": {{\r\n                    \"rel_x\": {X},\r\n                    \"rel_y\": {Y}\r\n                }},";
-                //定位按键位置
-                int key = FindKey(myJson, e);
-                //定位下方"rel_work_position":
-                int rwp_start = myJson.IndexOf("\"rel_work_position\":", key);
-                //定位"rel_work_position":后的第一个},
-                int rwp_end = myJson.IndexOf("},", rwp_start);
-                //调整位置
-                rwp_end += 2;
-                myJson = myJson.Substring(0, rwp_start) + rwp + myJson.Substring(rwp_end);
-                //定位上方的"rel_position":
-                int rp_start = myJson.LastIndexOf("\"rel_position\":", key);
-                //定位"rel_position":后的第一个},
-                int rp_end = myJson.IndexOf("},", rp_start);
-                //调整位置
-                rp_end += 2;
-                myJson = myJson.Substring(0, rp_start) + rp + myJson.Substring(rp_end);
+                SetRelPosition(key["icon"]?["rel_position"], dX, dY);
+                SetRelPosition(key["rel_work_position"], dX, dY);
             }
-            //修改宏指牌按键
-            else if (Type == typeMacro) {
-                //定位宏指牌按键坐标
-                int KeyMacroX = FindMacroX(myJson, e);
-                int keyMacroSep = FindSep(myJson, KeyMacroX);
-                int keyMacroEnd = FindMacroEnd(myJson, keyMacroSep);
-                //修改宏指牌按键
-                myJson = myJson.Substring(0, KeyMacroX) + X + "," + Y + myJson.Substring(keyMacroEnd);
+            else if (type == typeBunchClick)
+            {
+                SetRelPosition(key["icon"]?["rel_position"], dX, dY);
+                SetRelPosition(key["rel_work_position"], dX, dY);
             }
-
-
-            return myJson;
+            else if (type == typeMacro)
+            {
+                var pressActions = key["press_actions"] as JArray;
+                if (pressActions == null) return null;
+                for (int i = 0; i < pressActions.Count; i++)
+                {
+                    var action = pressActions[i]?.Value<string>();
+                    if (action != null && action.StartsWith("curve_rel:mouse;("))
+                    {
+                        pressActions[i] = "curve_rel:mouse;(" + X + "," + Y + ")";
+                        return Serialize(json);
+                    }
+                }
+                return null;
+            }
+            return Serialize(json);
         }
-        //读取单击按键坐标
-        public static string[] ReadKeyPP(string myJson, KeyEventArgs e) {
 
+        public static string ReKey(string myJson, string KeyText, string X, string Y)
+        {
+            var json = Parse(myJson);
+            var key = GetKeyByText(json, KeyText);
+            if (key == null) return myJson;
+
+            string type = key["type"]?.Value<string>();
+            if (!double.TryParse(X, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dX) ||
+                !double.TryParse(Y, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dY))
+                return myJson;
+
+            if (type == typeClick)
+            {
+                SetRelPosition(key["icon"]?["rel_position"], dX, dY);
+                SetRelPosition(key["rel_work_position"], dX, dY);
+            }
+            else if (type == typeBunchClick)
+            {
+                SetRelPosition(key["icon"]?["rel_position"], dX, dY);
+                SetRelPosition(key["rel_work_position"], dX, dY);
+            }
+            else if (type == typeMacro)
+            {
+                var pressActions = key["press_actions"] as JArray;
+                if (pressActions == null) return null;
+                for (int i = 0; i < pressActions.Count; i++)
+                {
+                    var action = pressActions[i]?.Value<string>();
+                    if (action != null && action.StartsWith("curve_rel:mouse;("))
+                    {
+                        pressActions[i] = "curve_rel:mouse;(" + X + "," + Y + ")";
+                        return Serialize(json);
+                    }
+                }
+                return null;
+            }
+            return Serialize(json);
+        }
+
+        private static void SetRelPosition(JToken posObj, double x, double y)
+        {
+            if (posObj == null) return;
+            posObj["rel_x"] = x;
+            posObj["rel_y"] = y;
+        }
+
+        //读取单击按键或宏按键的第一组坐标
+        public static string[] ReadKeyPP(string myJson, KeyEventArgs e)
+        {
             try
             {
-                string type = FindType(myJson, e);
+                var json = Parse(myJson);
+                var key = GetKeyByVirtualKey(json, e.KeyValue);
+                if (key == null) return null;
+
+                string type = key["type"]?.Value<string>();
                 if (type == typeClick)
                 {
-                    //单击键位时查找坐标
-                    string keyX = "";
-                    string keyY = "";
-                    //寻找X坐标
-                    int keyAftX = FindAftX(myJson, e);
-                    int keyAftSep = FindSep(myJson, keyAftX);
-                    keyX = myJson.Substring(keyAftX, keyAftSep - keyAftX);
-                    //寻找Y坐标
-                    int keyAftY = FindAftY(myJson, e);
-                    int keyAftEnd = FindEnd(myJson, keyAftY) - 13;
-                    keyY = myJson.Substring(keyAftY, keyAftEnd - keyAftY);
-                    return new string[] { keyX, keyY };
+                    var rwp = key["rel_work_position"];
+                    if (rwp == null) return null;
+                    return new[] {
+                        (rwp["rel_x"]?.Value<double>() ?? 0.0).ToString(),
+                        (rwp["rel_y"]?.Value<double>() ?? 0.0).ToString()
+                    };
+                }
+                else if (type == typeBunchClick)
+                {
+                    var rwp = key["rel_work_position"];
+                    if (rwp == null) return null;
+                    return new[] {
+                        (rwp["rel_x"]?.Value<double>() ?? 0.0).ToString(),
+                        (rwp["rel_y"]?.Value<double>() ?? 0.0).ToString()
+                    };
                 }
                 else if (type == typeMacro)
                 {
-                    //宏按键时查找坐标，多组坐标时返回第一组
-                    //查找 "virtual_key": +键值 的起始位置
-                    int baseIndex = myJson.IndexOf("\"virtual_key\": " + e.KeyValue);
-                    //查找 ( 定位坐标起始位置
-                    int StartIndex = myJson.IndexOf("(", baseIndex);
-                    //查找 "type" 定位键位终点位置
-                    int NextIndex = myJson.IndexOf("\"type\"", baseIndex);
-                    //坐标起始位置越界，该宏键位不存在坐标。
-                    if (StartIndex > NextIndex) { return null; }
-                    //查找 , 定位坐标中间位置
-                    int MidIndex = myJson.IndexOf(",", StartIndex);
-                    //查找 ) 定位坐标结束位置
-                    int EndIndex = myJson.IndexOf(")", MidIndex);
-                    string keyX = myJson.Substring(StartIndex + 1, MidIndex - StartIndex - 1);
-                    string keyY = myJson.Substring(MidIndex + 1, EndIndex - MidIndex - 1);
-
-                    return new string[] { keyX, keyY };
-                }
-                else
-                {
-                    MessageBox.Show("当前仅支持读取单击按键中的坐标或宏按键的第一组坐标，请检查您选择的按键！");
+                    var pressActions = key["press_actions"] as JArray;
+                    if (pressActions == null) return null;
+                    foreach (var action in pressActions)
+                    {
+                        var text = action?.Value<string>();
+                        if (text != null && text.StartsWith("curve_rel:mouse;("))
+                        {
+                            // 提取 (X,Y) 中的坐标
+                            int start = text.IndexOf('(') + 1;
+                            int comma = text.IndexOf(',', start);
+                            int end = text.IndexOf(')', comma);
+                            if (start > 0 && comma > start && end > comma)
+                            {
+                                return new[] {
+                                    text.Substring(start, comma - start),
+                                    text.Substring(comma + 1, end - comma - 1)
+                                };
+                            }
+                            break;
+                        }
+                    }
                     return null;
                 }
+                else
+                {
+                    throw new NotSupportedException("当前仅支持读取单击按键中的坐标或宏按键的第一组坐标，请检查您选择的按键！");
+                }
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"读取按键坐标失败：{ex.Message}", ex);
             }
-            return null;
         }
-        //读取Json文件指定按键代码
-        public static string ReadKey(string filePath, KeyEventArgs e) {
+
+
+        public static string[] ReadKeyPP(string myJson, string keyText)
+        {
             try
             {
-                string text = File.ReadAllText(filePath);
-                string keystart = "\r\n        ";
-                //查找 "virtual_key": +键值 的起始位置
-                int baseIndex = text.IndexOf("\"virtual_key\": " + e.KeyValue);
-                if (baseIndex == -1) { return null; }
-                //尝试向上查找"type"
-                int lastTypeIndex = text.LastIndexOf("\"type\"", baseIndex);
-                int startIndex = -1;
-                if (lastTypeIndex == -1)
+                var json = Parse(myJson);
+                var key = GetKeyByText(json, keyText);
+                if (key == null) return null;
+
+                string type = key["type"]?.Value<string>();
+                if (type == typeClick || type == typeBunchClick)
                 {
-                    //该键位为第一个按键，定位"keymaps"后的第一个{
-                    startIndex = text.IndexOf("{", text.IndexOf("\"keymaps\""));
+                    var rwp = key["rel_work_position"];
+                    if (rwp == null) return null;
+                    return new[] {
+                        (rwp["rel_x"]?.Value<double>() ?? 0.0).ToString(),
+                        (rwp["rel_y"]?.Value<double>() ?? 0.0).ToString()
+                    };
+                }
+                else if (type == typeMacro)
+                {
+                    var pressActions = key["press_actions"] as JArray;
+                    if (pressActions == null) return null;
+                    foreach (var action in pressActions)
+                    {
+                        var text = action?.Value<string>();
+                        if (text != null && text.StartsWith("curve_rel:mouse;("))
+                        {
+                            int start = text.IndexOf('(') + 1;
+                            int comma = text.IndexOf(',', start);
+                            int end = text.IndexOf(')', comma);
+                            if (start > 0 && comma > start && end > comma)
+                            {
+                                return new[] {
+                                    text.Substring(start, comma - start),
+                                    text.Substring(comma + 1, end - comma - 1)
+                                };
+                            }
+                            break;
+                        }
+                    }
+                    return null;
                 }
                 else
                 {
-                    //该按键不为第一个按键，定位上一个"type"后的{
-                    startIndex = text.IndexOf("{", lastTypeIndex);
+                    throw new NotSupportedException("当前仅支持读取单击按键中的坐标或宏按键的第一组坐标，请检查您选择的按键！");
                 }
-                if (startIndex == -1) { return null; }
-                //向下查找 "type" ，再向下查找 } 定位结尾
-                int endIndex = text.IndexOf("}", text.IndexOf("\"type\":", baseIndex));
-                if (endIndex == -1) { return null; }
-                return keystart + text.Substring(startIndex, endIndex - startIndex + 1);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"读取按键坐标失败：{ex.Message}", ex);
             }
-            return null;
         }
-        //读取Json文件按键代码部分
+        //读取 JSON 文件中指定按键的完整 JSON 块（返回可作为新按键插入的 JSON 字符串）
+        public static string ReadKey(string filePath, KeyEventArgs e)
+        {
+            if (string.IsNullOrEmpty(filePath) || e == null) return null;
+            try
+            {
+                string text = File.ReadAllText(filePath, Encoding.UTF8);
+                var json = Parse(text);
+                var key = GetKeyByVirtualKey(json, e.KeyValue);
+                return key != null ? key.ToString(Formatting.Indented) : null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
+            }
+        }
+
+        public static string ReadKey(string filePath, string KeyText)
+        {
+            if (string.IsNullOrEmpty(filePath) || string.IsNullOrEmpty(KeyText)) return null;
+            try
+            {
+                string text = File.ReadAllText(filePath, Encoding.UTF8);
+                var json = Parse(text);
+                var key = GetKeyByText(json, KeyText);
+                return key != null ? key.ToString(Formatting.Indented) : null;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
+            }
+        }
+
+        //读取 JSON 文件中 keymaps 数组部分
         public static string ReadKeys(string filePath)
         {
+            if (string.IsNullOrEmpty(filePath)) return null;
             try
             {
-                string text = File.ReadAllText(filePath);
-
-                // 查找"keymaps":的起始位置
-                int startIndex = text.IndexOf("\"keymaps\":");
-                if (startIndex == -1) { return null; } else { startIndex += 12; }
-                // 查找"param":的起始位置
-                int endIndex = text.IndexOf("\"param\":");
-                if (endIndex == -1) { return null; }
-                //向上找到结尾的“}”
-                endIndex = text.LastIndexOf("}", endIndex);
-                if (endIndex == -1) { return null; }
-                return text.Substring(startIndex, endIndex - startIndex + 1);
-
+                string text = File.ReadAllText(filePath, Encoding.UTF8);
+                var json = Parse(text);
+                var keymaps = json["keymaps"] as JArray;
+                return keymaps?.ToString(Formatting.Indented);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
-            return null;
         }
-        //将完整按键写入Json文件
-        public static string WriteKeys(string keys, string myJson) {
 
+        //将按键代码写入 JSON 文件
+        public static string WriteKeys(string keys, string myJson)
+        {
             try
             {
-                // 查找"keymaps":的起始位置
-                int startIndex = myJson.IndexOf("\"keymaps\":");
-                int endIndex = myJson.IndexOf("\"param\":");
-                if (startIndex == -1) { return null; } else { startIndex += 12; }
-                if (endIndex == -1) { return null; }
-                if (endIndex - startIndex < 100) {
-                    //判定为没有任何按键的空文件
-                    return myJson.Substring(0, startIndex) + keys + myJson.Substring(startIndex);
+                var target = Parse(myJson);
+                var keymaps = target["keymaps"] as JArray;
+                if (keymaps == null) { target["keymaps"] = new JArray(); keymaps = target["keymaps"] as JArray; }
+
+                // 解析要写入的按键（可能是一个完整的 keymaps 数组，也可能是一个单独的按键对象）
+                JToken newKeys;
+                try
+                {
+                    newKeys = JToken.Parse(keys.Trim());
                 }
-                return myJson.Substring(0, startIndex) + keys + "," + myJson.Substring(startIndex);
+                catch
+                {
+                    return null;
+                }
 
+                if (newKeys is JArray arr)
+                {
+                    foreach (var item in arr)
+                    {
+                        keymaps.Add(item);
+                    }
+                }
+                else if (newKeys is JObject obj)
+                {
+                    // 传入的是单个按键对象，添加到现有数组
+                    keymaps.Add(obj);
+                }
+
+                return Serialize(target);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
-            return null;
         }
-        //获取待写入的按键部分的所有键值
+
+        //获取待写入的按键部分的所有键值（virtual_key）
         public static string[] FindKeyValues(string filePath)
         {
-            List<string> keyvalues = new List<string>();
-
+            if (string.IsNullOrEmpty(filePath)) return Array.Empty<string>();
             try
             {
-                // 读取文件内容
-                string text = File.ReadAllText(filePath);
+                string text = File.ReadAllText(filePath, Encoding.UTF8);
+                var json = Parse(text);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return Array.Empty<string>();
 
-                // 正则表达式匹配模式："virtual_key"后紧跟数字（支持整数/小数）
-                Regex regex = new Regex(@"""virtual_key""\s*:\s*(\d+)", RegexOptions.IgnoreCase);
-
-                // 查找所有匹配项
-                MatchCollection matches = regex.Matches(text);
-
-                // 提取数字部分
-                foreach (Match match in matches)
-                {
-                    if (match.Groups.Count > 1)
-                    {
-                        keyvalues.Add(match.Groups[1].Value);
-                    }
-                }
+                return keymaps
+                    .Select(k => (k as JObject)?["key"]?["virtual_key"]?.Value<int>().ToString())
+                    .Where(v => v != null)
+                    .ToArray();
             }
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show($"错误：文件 '{filePath}' 未找到。");
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show($"读取文件时发生错误：{ex.Message}");
-            }
-
-            return keyvalues.ToArray();
+            catch (FileNotFoundException) { throw; }
+            catch (IOException ex) { throw new InvalidOperationException($"读取文件时发生错误：{ex.Message}", ex); }
         }
-        //检查被写入的Json文件是否有按键重复
+
+        //检查被写入的 JSON 文件是否有按键重复
         public static bool AreAllKeysMissing(string[] keys, string myJson)
         {
-            // 使用正则表达式提取所有虚拟键值（支持带/不带引号的数字）
-            var regex = new Regex(@"""virtual_key""\s*:\s*(\d+)", RegexOptions.IgnoreCase);
-            var matches = regex.Matches(myJson);
+            var json = Parse(myJson);
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return true;
 
-            // 将所有匹配到的键值存入哈希集合（去重）
-            var existingKeys = new HashSet<string>();
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
-                {
-                    existingKeys.Add(match.Groups[1].Value);
-                }
-            }
+            var existingKeys = new HashSet<string>(
+                keymaps.Select(k => (k as JObject)?["key"]?["virtual_key"]?.Value<int>().ToString())
+                       .Where(v => v != null)
+            );
 
-            // 检查所有待查键值是否均不在集合中
-            foreach (var key in keys)
-            {
-                if (existingKeys.Contains(key))
-                {
-                    return false; // 存在冲突，立即返回false
-                }
-            }
-
-            return true; // 所有键值均不存在
+            return keys.All(k => !existingKeys.Contains(k));
         }
-        //如果有按键重复，以下两个函数用于检测重复的按键
-        //获取文件中的所有键位
+
+        //获取文件中的所有键位文字
         public static string[] FindKeyTexts(string filePath)
         {
-            List<string> keytexts = new List<string>();
-
+            if (string.IsNullOrEmpty(filePath)) return Array.Empty<string>();
             try
             {
-                // 读取文件内容
-                string text = File.ReadAllText(filePath);
+                string text = File.ReadAllText(filePath, Encoding.UTF8);
+                var json = Parse(text);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return Array.Empty<string>();
 
-                // 正则表达式匹配模式："text": "" 中""中的键位内容（支持英文/数字）
-                Regex regex = new Regex(@"""text""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
-
-                // 查找所有匹配项
-                MatchCollection matches = regex.Matches(text);
-
-                // 提取数字部分
-                foreach (Match match in matches)
-                {
-                    if (match.Groups.Count > 1)
-                    {
-                        keytexts.Add(match.Groups[1].Value);
-                    }
-                }
+                return keymaps
+                    .Select(k => (k as JObject)?["key"]?["text"]?.Value<string>())
+                    .Where(v => v != null)
+                    .ToArray();
             }
-            catch (FileNotFoundException)
-            {
-                MessageBox.Show($"错误：文件 '{filePath}' 未找到。");
-            }
-            catch (IOException ex)
-            {
-                MessageBox.Show($"读取文件时发生错误：{ex.Message}");
-            }
-
-            return keytexts.ToArray();
+            catch (FileNotFoundException) { throw; }
+            catch (IOException ex) { throw new InvalidOperationException($"读取文件时发生错误：{ex.Message}", ex); }
         }
-        //检查被写入的Json文件具体有什么按键重复
+
+        //检查被写入的 JSON 文件具体有什么按键文字重复
         public static string[] FindAllRepeatKeyTexts(string[] keys, string myJson)
         {
-            // 使用正则表达式提取所有虚拟键值（支持带/不带引号的数字）
-            var regex = new Regex(@"""text""\s*:\s*""([^""]+)""", RegexOptions.IgnoreCase);
-            var matches = regex.Matches(myJson);
-            List<string> repeatKeyTexts = new List<string>();
-            // 将所有匹配到的键值存入哈希集合（去重）
-            var existingKeys = new HashSet<string>();
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
-                {
-                    existingKeys.Add(match.Groups[1].Value);
-                }
-            }
+            var json = Parse(myJson);
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return Array.Empty<string>();
 
-            // 检查所有待查键值是否均不在集合中
-            foreach (var key in keys)
-            {
-                if (existingKeys.Contains(key))
-                {
-                    repeatKeyTexts.Add(key);// 存在冲突，记录冲突键位
-                }
-            }
+            var existingKeys = new HashSet<string>(
+                keymaps.Select(k => (k as JObject)?["key"]?["text"]?.Value<string>())
+                       .Where(v => v != null)
+            );
 
-            return repeatKeyTexts.ToArray(); // 返回冲突的键位
+            return keys.Where(k => existingKeys.Contains(k)).ToArray();
         }
+
         //记录重复按键的键值
         public static string[] FindAllRepeatKeyValues(string[] keys, string myJson)
         {
-            // 使用正则表达式提取所有虚拟键值（支持带/不带引号的数字）
-            var regex = new Regex(@"""virtual_key""\s*:\s*(\d+)", RegexOptions.IgnoreCase);
-            var matches = regex.Matches(myJson);
-            List<string> repeatKeyValues = new List<string>();
-            // 将所有匹配到的键值存入哈希集合（去重）
-            var existingKeys = new HashSet<string>();
-            foreach (Match match in matches)
-            {
-                if (match.Groups.Count > 1)
-                {
-                    existingKeys.Add(match.Groups[1].Value);
-                }
-            }
+            var json = Parse(myJson);
+            var keymaps = json["keymaps"] as JArray;
+            if (keymaps == null) return Array.Empty<string>();
 
-            // 检查所有待查键值是否均不在集合中
-            foreach (var key in keys)
-            {
-                if (existingKeys.Contains(key))
-                {
-                    repeatKeyValues.Add(key);// 存在冲突，记录冲突键值
-                }
-            }
-            return repeatKeyValues.ToArray(); // 返回冲突键值
+            var existingKeys = new HashSet<string>(
+                keymaps.Select(k => (k as JObject)?["key"]?["virtual_key"]?.Value<int>().ToString())
+                       .Where(v => v != null)
+            );
+
+            return keys.Where(k => existingKeys.Contains(k)).ToArray();
         }
+
         //寻找并返回指定区域的按键坐标、键名、键值
-        public static List<(double RelX, double RelY, string Text, string VirtualKey)> FindRangeKeyValues(double[] rangeLT, double[] rangeRD, string myJson) {
-            List<string> rangeKeyValues = new List<string>();
+        public static List<(double RelX, double RelY, string Text, string VirtualKey)> FindRangeKeyValues(
+            double[] rangeLT, double[] rangeRD, string myJson)
+        {
             try
             {
-                var results = new List<(double, double, string, string)>();
-                string pattern = @"""rel_position""[\s\S]*?""rel_x"":\s*(\d+\.\d+)[\s\S]*?""rel_y"":\s*(\d+\.\d+)[\s\S]*?""key""[\s\S]*?""text"":\s*""([^""]+)""[\s\S]*?""virtual_key"":\s*(\d+)";
+                var json = Parse(myJson);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return new List<(double, double, string, string)>();
 
-                foreach (Match match in Regex.Matches(myJson, pattern, RegexOptions.Multiline))
+                var results = new List<(double, double, string, string)>();
+                foreach (var item in keymaps)
                 {
-                    double relX = double.Parse(match.Groups[1].Value);
-                    double relY = double.Parse(match.Groups[2].Value);
-                    string text = match.Groups[3].Value;
-                    string virtualKey = match.Groups[4].Value;
+                    var k = item as JObject;
+                    if (k == null) continue;
+
+                    var relPos = k["icon"]?["rel_position"];
+                    if (relPos == null) continue;
+
+                    double relX = relPos["rel_x"]?.Value<double>() ?? 0;
+                    double relY = relPos["rel_y"]?.Value<double>() ?? 0;
+
                     if (relX > rangeLT[0] && relX < rangeRD[0] && relY > rangeLT[1] && relY < rangeRD[1])
                     {
+                        string text = k["key"]?["text"]?.Value<string>() ?? "";
+                        string virtualKey = k["key"]?["virtual_key"]?.Value<int>().ToString() ?? "";
                         results.Add((relX, relY, text, virtualKey));
                     }
                 }
@@ -524,277 +608,349 @@ namespace MuMu坐标计算
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
-                return null;
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
         }
-        //通过键值定位按键并删除
-        public static string DeleteKey(string key, string myJson) {
+
+        //通过键值定位按键并从 keymaps 数组中删除
+        public static string DeleteKey(string key, string myJson)
+        {
             try
             {
-                //查找 "virtual_key": +键值 的起始位置
-                int baseIndex = myJson.IndexOf("\"virtual_key\": " + key);
-                //查找 "param": 定位尾端
-                int fileEndIndex = myJson.IndexOf("\"param\":");
-                //通过起始位置，定位上下边界的位置：
-                //尝试向上定位 "type" 
-                int lastTypeIndex = myJson.LastIndexOf("\"type\"", baseIndex);
-                int startIndex = -1;
-                //区分情况，如果向上找不到"type" ，按第一个键处理，定位"keymaps"后的"["，
-                if (lastTypeIndex == -1)
+                var json = Parse(myJson);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return myJson;
+
+                if (!int.TryParse(key, out int vk)) return myJson;
+
+                int index = -1;
+                for (int i = 0; i < keymaps.Count; i++)
                 {
-                    //该键位为第一个按键，定位"keymaps"后的"["
-                    startIndex = myJson.IndexOf("[", myJson.IndexOf("\"keymaps\""));
+                    if (keymaps[i] is JObject k && k["key"]?["virtual_key"]?.Value<int>() == vk)
+                    {
+                        index = i;
+                        break;
+                    }
                 }
-                else {
-                    //该按键不为第一个按键，定位上一个"type"后的 ,
-                    startIndex = myJson.IndexOf(",", lastTypeIndex);
-                }
-                //向下定位 "type": 后分情况，
-                int endIndex = myJson.IndexOf("}", myJson.IndexOf("\"type\":", baseIndex));
-                if (fileEndIndex - myJson.IndexOf("\"type\":", baseIndex) > 100)
-                {
-                    //定位非尾端按键
-                    endIndex += 1;//后移一位覆盖逗号
-                }
-                else {
-                    //定位尾端按键
-                    startIndex -= 1; //删除范围覆盖逗号
-                }
-                //处理特殊情况，当文件中仅有一个按键时会变成特殊格式：
-                if ((fileEndIndex - myJson.IndexOf("\"type\":", baseIndex) < 100) && lastTypeIndex == -1)
-                {
-                    startIndex += 1;//特殊情况时虽然是尾端按键但是范围不需要覆盖逗号
-                }
-                if (startIndex == -1 || endIndex == -1) { return null; }
-                return myJson.Substring(0, startIndex + 1) + myJson.Substring(endIndex + 1);
+                if (index >= 0)
+                    keymaps.RemoveAt(index);
+
+                return Serialize(json);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
-            return null;
         }
+
         //通过键值批量删除键位
         public static string DeleteKeys(string[] repeatKeyValues, string myJson)
         {
             try
             {
-                foreach (string key in repeatKeyValues) {
-                    myJson = DeleteKey(key, myJson);
+                var json = Parse(myJson);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return myJson;
+
+                var toRemove = new HashSet<string>(repeatKeyValues);
+                for (int i = keymaps.Count - 1; i >= 0; i--)
+                {
+                    if (keymaps[i] is JObject k)
+                    {
+                        var vk = k["key"]?["virtual_key"]?.Value<int>().ToString();
+                        if (vk != null && toRemove.Contains(vk))
+                            keymaps.RemoveAt(i);
+                    }
                 }
-                return myJson;
+                return Serialize(json);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
-            return null;
         }
-        //生成指定类型的键位
-        public static string CreateKey(string keyType, KeyEventArgs bindKey, string keyX, string keyY, string scan_code) {
+
+        //生成指定类型的键位 JSON 字符串
+        public static string CreateKey(string keyType, KeyEventArgs bindKey, string keyX, string keyY, string scan_code)
+        {
+            if (bindKey == null) return null;
             try
             {
-                string keystart = "\r\n        ";
+                string keyName = bindKey.KeyCode.ToString();
+                string keyValue = bindKey.KeyValue.ToString();
+
                 if (keyType == typeClick)
                 {
-                    //生成单击按键
-                    return keystart + $"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyX},\r\n                    \"rel_y\": {keyY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyX},\r\n                \"rel_y\": {keyY}\r\n            }},\r\n            \"type\": \"Click\"\r\n        }}";
+                    return $"{{\n            \"editor_icon_scale\": 1,\n            \"icon\": {{\n                \"background_color\": \"00000066\",\n                \"description\": \"\",\n                \"radius_correction\": 1,\n                \"rel_position\": {{\n                    \"rel_x\": {keyX},\n                    \"rel_y\": {keyY}\n                }},\n                \"visibility\": true\n            }},\n            \"key\": {{\n                \"device\": \"keyboard\",\n                \"scan_code\": {scan_code},\n                \"text\": \"{keyName}\",\n                \"virtual_key\": {keyValue}\n            }},\n            \"rel_work_position\": {{\n                \"rel_x\": {keyX},\n                \"rel_y\": {keyY}\n            }},\n            \"type\": \"Click\"\n        }}";
                 }
-                else if (keyType == typeMacro) {
-                    //调整一下宏指牌按键的位置，触底向反方向偏移3%，未触底向正方向偏移3%
-                    double keyPositionSet = 0.03;//偏移量
-                    double keyPositionX = 0;
-                    double keyPositionY = 0;
-                    if ((double.Parse(keyX) + keyPositionSet) < 1) { keyPositionX = double.Parse(keyX) + keyPositionSet; } else { keyPositionX = double.Parse(keyX) - keyPositionSet; }
-                    if ((double.Parse(keyY) + keyPositionSet) < 1) { keyPositionY = double.Parse(keyY) + keyPositionSet; } else { keyPositionY = double.Parse(keyY) - keyPositionSet; }
-                    //生成宏指牌按键
-                    return keystart + $"{{\r\n            \"editor_icon_scale\": 1,\r\n            \"icon\": {{\r\n                \"background_color\": \"00000066\",\r\n                \"description\": \"\",\r\n                \"radius_correction\": 1,\r\n                \"rel_position\": {{\r\n                    \"rel_x\": {keyPositionX},\r\n                    \"rel_y\": {keyPositionY}\r\n                }},\r\n                \"visibility\": true\r\n            }},\r\n            \"key\": {{\r\n                \"device\": \"keyboard\",\r\n                \"scan_code\": {scan_code},\r\n                \"text\": \"{bindKey.KeyCode.ToString()}\",\r\n                \"virtual_key\": {bindKey.KeyValue.ToString()}\r\n            }},\r\n            \"press_actions\": [\r\n                \"start_loop:until_release\",\r\n                \"curve_first_point_sleep_time:1\",\r\n                \"curve_last_point_sleep_time:1\",\r\n                \"curve_rel:mouse;({keyX},{keyY})\",\r\n                \"curve_release\",\r\n                \"stop_loop\"\r\n            ],\r\n            \"rel_work_position\": {{\r\n                \"rel_x\": {keyPositionX},\r\n                \"rel_y\": {keyPositionY}\r\n            }},\r\n            \"release_actions\": [\r\n\r\n            ],\r\n            \"type\": \"Macro\"\r\n        }}";
+                else if (keyType == typeMacro)
+                {
+                    // 调整宏指牌按键位置：触底向反方向偏移3%，未触底向正方向偏移3%
+                    double keyPositionSet = 0.03;
+                    if (!double.TryParse(keyX, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dKeyX) ||
+                        !double.TryParse(keyY, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double dKeyY))
+                        return null;
+                    double keyPositionX = (dKeyX + keyPositionSet) < 1
+                        ? dKeyX + keyPositionSet
+                        : dKeyX - keyPositionSet;
+                    double keyPositionY = (dKeyY + keyPositionSet) < 1
+                        ? dKeyY + keyPositionSet
+                        : dKeyY - keyPositionSet;
+
+                    return $"{{\n            \"editor_icon_scale\": 1,\n            \"icon\": {{\n                \"background_color\": \"00000066\",\n                \"description\": \"\",\n                \"radius_correction\": 1,\n                \"rel_position\": {{\n                    \"rel_x\": {keyPositionX},\n                    \"rel_y\": {keyPositionY}\n                }},\n                \"visibility\": true\n            }},\n            \"key\": {{\n                \"device\": \"keyboard\",\n                \"scan_code\": {scan_code},\n                \"text\": \"{keyName}\",\n                \"virtual_key\": {keyValue}\n            }},\n            \"press_actions\": [\n                \"start_loop:until_release\",\n                \"curve_first_point_sleep_time:1\",\n                \"curve_last_point_sleep_time:1\",\n                \"curve_rel:mouse;({dKeyX},{dKeyY})\",\n                \"curve_release\",\n                \"stop_loop\"\n            ],\n            \"rel_work_position\": {{\n                \"rel_x\": {keyPositionX},\n                \"rel_y\": {keyPositionY}\n            }},\n            \"release_actions\": [\n\n            ],\n            \"type\": \"Macro\"\n        }}";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"错误：{ex.Message}");
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
             return null;
         }
-        public static string ResolutionToString(Dictionary<string, string> resolution) {
+
+        //分辨率字典序列化/反序列化（非 JSON 相关）
+        public static string ResolutionToString(Dictionary<string, string> resolution)
+        {
             try
             {
-                if (resolution.Count == 0) { return ""; }
-                else {
-                    string resolutiongString = "";
-                    foreach (var item in resolution) {
-                        string[] value = item.Value.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                        resolutiongString += item.Key + "," + value[0] + "," + value[1] + "V";
-                    }
-                    return resolutiongString;
+                if (resolution.Count == 0) return "";
+                string resolutionString = "";
+                foreach (var item in resolution)
+                {
+                    string[] value = item.Value.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                    if (value.Length < 2) continue;
+                    resolutionString += item.Key + "," + value[0] + "," + value[1] + "V";
                 }
-
+                return resolutionString;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"发生错误：{ex.Message}");
-                return "";
+                throw new InvalidOperationException($"发生错误：{ex.Message}", ex);
             }
         }
-        public static Dictionary<string, string> StringToResolution(string resolutionString) {
+
+        public static Dictionary<string, string> StringToResolution(string resolutionString)
+        {
             try
             {
-                if (string.IsNullOrWhiteSpace(resolutionString)) { return null; }
-                else
+                if (string.IsNullOrWhiteSpace(resolutionString)) return null;
+                string[] temp = resolutionString.Split(new[] { "V" }, StringSplitOptions.RemoveEmptyEntries);
+                var resolution = new Dictionary<string, string>();
+                foreach (var item in temp)
                 {
-                    string[] temp = resolutionString.Split(new string[] { "V" }, StringSplitOptions.RemoveEmptyEntries);
-                    Dictionary<string, string> resolution = new Dictionary<string, string> { };
-                    foreach (var item in temp)
+                    string[] temp2 = item.Split(new[] { "," }, StringSplitOptions.RemoveEmptyEntries);
+                    if (temp2.Length < 3) continue;
+                    resolution.Add(temp2[0], temp2[1] + "," + temp2[2]);
+                }
+                return resolution;
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"发生错误：{ex.Message}", ex);
+            }
+        }
+
+        /// <summary>
+        /// 坐标转换方法。
+        /// 基于"小分辨率放大后居中放入大分辨率"模型：
+        ///   将较小分辨率内容等比例放缩后居中放入较大分辨率，多余空间为黑边。
+        ///   大分辨率永远不会缩小，只有小分辨率放大。
+        /// KeymapToKeymap  方向：源 → 目标。若源是小则正向(+scale+offset)，若源是大则反向(-offset/scale)
+        /// MouseToSimulator 方向：窗口(大)→模拟器(小)，反向(-offset/scale)
+        /// result[2] = -1 表示转换后坐标超出目标边界（仅大→小方向时可能发生）
+        /// </summary>
+        public static double[] CalculateCoordinates(int FX, int FY, int SX, int SY, double mX, double mY,
+            CoordinateConversionDirection direction)
+        {
+            double[] result = new double[3] { 0.0, 0.0, 0.0 };
+            if (FX <= 0 || FY <= 0 || SX <= 0 || SY <= 0) return result;
+
+            int smallW, smallH, bigW, bigH;
+            bool sourceIsSmall;
+
+            if (direction == CoordinateConversionDirection.KeymapToKeymap)
+            {
+                double ratio1 = (double)FX / FY;
+                double ratio2 = (double)SX / SY;
+                if (ratio1 <= ratio2) { smallW = FX; smallH = FY; bigW = SX; bigH = SY; sourceIsSmall = true; }
+                else                 { smallW = SX; smallH = SY; bigW = FX; bigH = FY; sourceIsSmall = false; }
+            }
+            else
+            {
+                smallW = SX; smallH = SY;
+                bigW = FX; bigH = FY;
+                sourceIsSmall = false;
+            }
+
+            double smallAspect = (double)smallW / smallH;
+            double bigAspect = (double)bigW / bigH;
+
+            double fittedW, fittedH;
+            if (bigAspect >= smallAspect)
+            {
+                fittedH = bigH;
+                fittedW = bigH * smallAspect;
+            }
+            else
+            {
+                fittedW = bigW;
+                fittedH = bigW / smallAspect;
+            }
+
+            double scale = fittedW / smallW;
+            double offsetX = (bigW - fittedW) / 2.0;
+            double offsetY = (bigH - fittedH) / 2.0;
+
+            if (sourceIsSmall)
+            {
+                result[0] = mX * scale + offsetX;
+                result[1] = mY * scale + offsetY;
+                if (result[0] < 0) result[0] = 0.0;
+                if (result[1] < 0) result[1] = 0.0;
+                if (result[0] > bigW - 1) result[0] = bigW - 1.0;
+                if (result[1] > bigH - 1) result[1] = bigH - 1.0;
+                result[2] = 0.0;
+            }
+            else
+            {
+                result[0] = (mX - offsetX) / scale;
+                result[1] = (mY - offsetY) / scale;
+                result[2] = 0.0;
+                if (result[0] < 0 || result[1] < 0 ||
+                    result[0] > smallW - 1 || result[1] > smallH - 1)
+                {
+                    result[2] = -1.0;
+                    if (result[0] < 0) result[0] = 0.0;
+                    if (result[1] < 0) result[1] = 0.0;
+                    if (result[0] > smallW - 1) result[0] = smallW - 1.0;
+                    if (result[1] > smallH - 1) result[1] = smallH - 1.0;
+                }
+            }
+
+            return result;
+        }
+
+        public static double[] CalculateCoordinatesMouseToSimulator(int FX, int FY, int SX, int SY, double mX, double mY)
+        {
+            return CalculateCoordinates(FX, FY, SX, SY, mX, mY, CoordinateConversionDirection.MouseToSimulator);
+        }
+
+        public static double[] CalculateCoordinatesKToCK(int FX, int FY, int SX, int SY, double mX, double mY)
+        {
+            return CalculateCoordinates(FX, FY, SX, SY, mX, mY, CoordinateConversionDirection.KeymapToKeymap);
+        }
+
+        /// <summary>坐标转换方向枚举</summary>
+        public enum CoordinateConversionDirection
+        {
+            /// <summary>鼠标屏幕坐标 → 模拟器内部坐标</summary>
+            MouseToSimulator,
+            /// <summary>键位坐标 → 另一分辨率的键位坐标</summary>
+            KeymapToKeymap
+        }
+        //获取指定 JSON 文件所有单击按键
+        public static PBClass.ClickKeyInfo[] GetClickKeys(string kJson, int X, int Y)
+        {
+            if (X <= 0 || Y <= 0) return Array.Empty<PBClass.ClickKeyInfo>();
+            double KX = X - 1.0;
+            double KY = Y - 1.0;
+
+            try
+            {
+                var json = Parse(kJson);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return Array.Empty<PBClass.ClickKeyInfo>();
+
+                var result = new List<PBClass.ClickKeyInfo>();
+                foreach (var item in keymaps)
+                {
+                    var k = item as JObject;
+                    if (k == null || k["type"]?.Value<string>() != typeClick) continue;
+
+                    var rwp = k["rel_work_position"];
+                    if (rwp == null) continue;
+
+                    result.Add(new PBClass.ClickKeyInfo
                     {
-                        string[] temp2 = item.Split(new string[] { "," }, StringSplitOptions.RemoveEmptyEntries);
-                        resolution.Add(temp2[0], temp2[1] + "," + temp2[2]);
-                    }
-                    return resolution;
+                        KeyText = k["key"]?["text"]?.Value<string>() ?? "",
+                        RelX = (rwp["rel_x"]?.Value<double>() ?? 0) * KX,
+                        RelY = (rwp["rel_y"]?.Value<double>() ?? 0) * KY
+                    });
                 }
+                return result.ToArray();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"发生错误：{ex.Message}");
-                return null;
+                throw new InvalidOperationException($"错误：{ex.Message}", ex);
             }
-
-
         }
-        public static int[] CalculateAspectRatio(int width, int height)
+
+        public static string[] ReadAllKeys(string myJson)
         {
-            int gcd = GCD(width, height);
-            int[] result = new int[2] { width / gcd, height / gcd };
-            return result;
+            if (string.IsNullOrEmpty(myJson)) return Array.Empty<string>();
+            try
+            {
+                var json = JObject.Parse(myJson);
+                var keymaps = json["keymaps"] as JArray;
+                if (keymaps == null) return Array.Empty<string>();
+                return keymaps
+                    .Select(k => (k as JObject)?["key"]?["text"]?.Value<string>())
+                    .Where(v => v != null)
+                    .ToArray();
+            }
+            catch (Exception)
+            {
+                return Array.Empty<string>();
+            }
         }
 
-        private static int GCD(int a, int b)
+        public static string GetKeyText(string keyText)
         {
-            while (b != 0)
-            {
-                int temp = b;
-                b = a % b;
-                a = temp;
-            }
-            return a;
+            return keyText ?? "";
         }
-        public static double[] CalculateCoordinatesMouseToSimulator(int FX, int FY, int SX, int SY, int mX, int mY) {
-            //FX,FY为模拟器分辨率，,SX,SY为屏幕分辨率,mX,mY为鼠标当前坐标
-            double[] result = new double[3] { 0.0, 0.0 ,0.0};
-            //先求比例，按不同情况分类
-            int[] Fratio = CalculateAspectRatio(FX, FY);
-            int[] Sratio = CalculateAspectRatio(SX, SY);
-            if (Fratio[0] == Sratio[0] && Fratio[1] == Sratio[1])
-            {
-                //同比例，则直接换算
-                double a = (double)FX / SX;
-                result[0] = mX * a;
-                result[1] = mY * a;
-                return result;
-            }
-            else {
-                //不同比例，则分情况换算
-                double Fa = (double)FX / FY;
-                double Sa = (double)SX / SY;
-                if (Fa > Sa)
-                {
-                    //模拟器的宽为准，例：屏幕16:9，模拟器20:9超宽屏
-                    double a = (double)FX / SX;
-                    result[0] = mX * a;
-                    double y = FY / a;//y轴模拟器部分占据整个屏幕的像素点数
-                    result[2] = (SY - y) / 2;//上下的偏移量
-                    result[1] = (mY - result[2])*a;//此时需要对Y轴范围做限制，防止破框。
-                    if (result[1] < 0) result[1] = 0.0;//y轴强制复原在起点
-                    if (result[1] > FY) result[1] = FY - 1.0;//y轴强制复原在顶点
-                    return result;
-                }
-                else if (Fa < Sa) {
-                    //模拟器的高为准，例：屏幕16:9，模拟器4:3
-                    double a = (double)FY / SY;
-                    result[1] = mY * a;
-                    double x = FX / a;//x轴部分占据整个屏幕的像素点数
-                    result[2] = (SX - x) / 2;//左右的偏移量
-                    result[0] = (mX - result[2]) * a;//此时需要对X轴范围做限制，防止破框
-                    if (result[0] < 0) result[0] = 0.0;//x轴强制复原在起点
-                    if (result[0] > FX) result[0] = FX - 1.0;//y轴强制复原在顶点
-                    return result;
-                }
-            }
-            return result;
+
+        public static string GetKeyText(System.Windows.Forms.CheckedListBox clb)
+        {
+            return clb?.SelectedItem?.ToString() ?? "";
         }
-        /*废案备份：
-         * 之前考虑的是覆写一定位数的坐标，这样不用定位后续内容，但mumu模拟器保存下来的坐标位数不确定，最终还是舍弃了这个方案
-         * 其实最开始想用的是把Json反序列化成字典再操作，但想想只是改个坐标罢了，又要引第三方库，没必要吧，字符串操作一下得了。
-         public static string ReKey(string myJson, KeyEventArgs e, string X, string Y, int Len) {
-
-            string reX = X.Substring(0, Len);
-            string reY = Y.Substring(0, Len);
-            int keyPreX = FindPreX(myJson, e);
-            int keyPreY = FindPreY(myJson, e);
-            int keyAftX = FindAftX(myJson, e);
-            int keyAftY = FindAftY(myJson, e);
-            myJson = myJson.Substring(0, keyPreX) + reX + myJson.Substring(keyPreX + Len);
-            myJson = myJson.Substring(0, keyPreY) + reY + myJson.Substring(keyPreY + Len);
-            myJson = myJson.Substring(0, keyAftX) + reX + myJson.Substring(keyAftX + Len);
-            myJson = myJson.Substring(0, keyAftY) + reY + myJson.Substring(keyAftY + Len);
-            return myJson;
-        }
-        */
-
-
     }
+
     public static class StringCompressor
     {
-        // 压缩为字节数组
         public static byte[] Compress(string text)
         {
             if (string.IsNullOrEmpty(text)) return null;
-
             byte[] inputBytes = Encoding.UTF8.GetBytes(text);
-            using (MemoryStream outputStream = new MemoryStream())
+            using (var outputStream = new MemoryStream())
             {
-                using (GZipStream gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
-                {
+                using (var gzipStream = new GZipStream(outputStream, CompressionMode.Compress))
                     gzipStream.Write(inputBytes, 0, inputBytes.Length);
-                }
                 return outputStream.ToArray();
             }
         }
 
-        // 压缩为Base64字符串（适合存储或传输）
         public static string CompressToBase64(string text)
         {
+            if (string.IsNullOrEmpty(text)) return "";
             byte[] compressedBytes = Compress(text);
             return Convert.ToBase64String(compressedBytes);
         }
     }
+
     public static class StringDecompressor
     {
-        // 从字节数组解压
         public static string Decompress(byte[] compressedData)
         {
             if (compressedData == null || compressedData.Length == 0) return string.Empty;
-
-            using (MemoryStream inputStream = new MemoryStream(compressedData))
-            {
-                using (GZipStream gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
-                {
-                    using (StreamReader reader = new StreamReader(gzipStream))
-                    {
-                        return reader.ReadToEnd();
-                    }
-                }
-            }
+            using (var inputStream = new MemoryStream(compressedData))
+            using (var gzipStream = new GZipStream(inputStream, CompressionMode.Decompress))
+            using (var reader = new StreamReader(gzipStream))
+                return reader.ReadToEnd();
         }
 
-        // 从Base64字符串解压
         public static string DecompressFromBase64(string base64Data)
         {
             byte[] compressedBytes = Convert.FromBase64String(base64Data);
             return Decompress(compressedBytes);
         }
-        
     }
-
 }

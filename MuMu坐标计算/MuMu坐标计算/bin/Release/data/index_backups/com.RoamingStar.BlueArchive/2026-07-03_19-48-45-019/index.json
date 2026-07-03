@@ -1,0 +1,139 @@
+{
+    "Config": [
+        {
+            "默认操作方案": {
+                "configType": "Cloud",
+                "contentUrl": "https://api.mumu.nie.netease.com/api/keymapping/64cb23e0fa6e512c21730856/content/h5",
+                "copiedNum": 0,
+                "description": "默认操作方案",
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-默认操作方案.json",
+                "priority": 0,
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "url": "http://g.fp.ps.netease.com/nemu/file/64d200a15d8d067ae4d2939dI8CVt26605",
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "恢复方案20260702": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-恢复方案20260702.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "S14大决战寿司K宝2606.9晴奈刀": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-S14大决战寿司K宝2606.9晴奈刀.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "R键位重开大决战红甲鸡水日奈阿露刀": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-R键位重开大决战红甲鸡水日奈阿露刀.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "S14大决战红甲寻逆3928": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-S14大决战红甲寻逆3928.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "S14大决战红甲虹夏3931": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-S14大决战红甲虹夏3931.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "uuid": "ea681d74-148e-4c3f-904a-56cc15df6028",
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "不使用方案": {
+                "configType": "Customer",
+                "moveTop": false,
+                "path": "sanitary-4EA33DC3-6C4B-46A2-A180-6F2597234300",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "恢复方案2": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-恢复方案2.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        },
+        {
+            "S28轻甲防御测试漆黑人形摆烂刀": {
+                "configType": "Customer",
+                "copiedNum": 0,
+                "moveTop": false,
+                "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-S28轻甲防御测试漆黑人形摆烂刀.json",
+                "status": "",
+                "transparency": 100,
+                "type": 0,
+                "xSensitivity": 1,
+                "ySensitivity": 1
+            }
+        }
+    ],
+    "Current": {
+        "S14大决战红甲寻逆3928": {
+            "configType": "Customer",
+            "copiedNum": 0,
+            "moveTop": false,
+            "path": "C:/Users/Sakura/AppData/Roaming/Netease/MuMuPlayer/data/keymapConfig/com.RoamingStar.BlueArchive-S14大决战红甲寻逆3928.json",
+            "status": "",
+            "transparency": 100,
+            "type": 0,
+            "xSensitivity": 1,
+            "ySensitivity": 1
+        }
+    },
+    "Version": 5
+}

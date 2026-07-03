@@ -1,0 +1,25 @@
+﻿[2026-07-03 00:16:21.465] [INFO] [LogService] 日志服务已启动，日志目录: G:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Debug\Logs
+[2026-07-03 00:16:21.466] [INFO] [Application] 程序启动，版本: 1.0.0.0
+[2026-07-03 00:16:21.757] [INFO] [Form1] 主窗口加载开始
+[2026-07-03 00:16:21.807] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\-com.RoamingStar.BlueArchive-总力战野球 助手测试.json
+[2026-07-03 00:16:21.982] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\-com.RoamingStar.BlueArchive-总力战野球 助手测试.json
+[2026-07-03 00:16:21.990] [INFO] [Form1] 加载Json文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\-com.RoamingStar.BlueArchive-总力战野球 助手测试.json
+[2026-07-03 00:16:21.990] [INFO] [Form1] 初始加载Json文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\-com.RoamingStar.BlueArchive-总力战野球 助手测试.json
+[2026-07-03 00:16:22.091] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-恢复方案20260702.json
+[2026-07-03 00:16:22.108] [INFO] [Form1] 主窗口加载完成
+[2026-07-03 00:16:22.112] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-恢复方案20260702.json
+[2026-07-03 00:16:22.112] [INFO] [Form1] 加载Json文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-恢复方案20260702.json
+[2026-07-03 00:16:54.150] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战寿司K宝2606.9晴奈刀.json
+[2026-07-03 00:16:54.156] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战寿司K宝2606.9晴奈刀.json
+[2026-07-03 00:16:54.157] [INFO] [Form1] 加载Json文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战寿司K宝2606.9晴奈刀.json
+[2026-07-03 00:16:57.093] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战红甲虹夏3931.json
+[2026-07-03 00:16:57.099] [DEBUG] [FileMonitor] 开始监控文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战红甲虹夏3931.json
+[2026-07-03 00:16:57.099] [INFO] [Form1] 加载Json文件: C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-S14大决战红甲虹夏3931.json
+[2026-07-03 00:17:48.919] [INFO] [Form1] 打开ADB触摸采集窗口
+[2026-07-03 00:17:48.929] [INFO] [AdbTouchForm] ADB触摸窗口已创建，端口: 16448
+[2026-07-03 00:17:51.744] [INFO] [AdbTouchForm] 尝试ADB连接
+[2026-07-03 00:17:51.745] [DEBUG] [TouchCollector] TouchCollector创建
+[2026-07-03 00:17:51.924] [INFO] [AdbTouchForm] 分辨率检测: 1280x720
+[2026-07-03 00:18:16.854] [INFO] [AdbTouchForm] ADB触摸窗口关闭
+[2026-07-03 00:18:16.854] [DEBUG] [TouchCollector] TouchCollector释放
+[2026-07-03 00:18:31.470] [INFO] [LogService] 日志服务正在关闭...

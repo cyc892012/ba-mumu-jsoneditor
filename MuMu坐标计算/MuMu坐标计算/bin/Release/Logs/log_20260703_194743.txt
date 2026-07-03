@@ -1,0 +1,16 @@
+﻿[2026-07-03 19:47:43.734] [INFO] [Application] 程序启动，版本: 1.0.0.0
+[2026-07-03 19:47:44.708] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=15317, CanUndo=False, CanRedo=False
+[2026-07-03 19:47:45.256] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=6495, CanUndo=False, CanRedo=False
+[2026-07-03 19:47:53.684] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=14476, CanUndo=False, CanRedo=False
+[2026-07-03 19:48:14.526] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=6495, CanUndo=False, CanRedo=False
+[2026-07-03 19:48:27.148] [INFO] [Form1] BackupAfterJsonWriting: 记录变更快照, JSON长度=7232, CanUndo=True, CanRedo=False
+[2026-07-03 19:48:27.149] [INFO] [Form1] WriteToJsonAndBackup: 写入成功, JSON长度=7232, 路径=C:\Users\Sakura\AppData\Roaming\Netease\MuMuPlayer\data\keymapConfig\com.RoamingStar.BlueArchive-恢复方案2.json
+[2026-07-03 19:48:58.488] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=14476, CanUndo=False, CanRedo=False
+[2026-07-03 19:49:06.364] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=12181, CanUndo=False, CanRedo=False
+[2026-07-03 19:51:28.186] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=11319, CanUndo=False, CanRedo=False
+[2026-07-03 19:51:28.186] [INFO] [Form1] 拖放加载Json文件: G:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Release\data\R键位重开20250714简化.json
+[2026-07-03 19:51:32.091] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=1577, CanUndo=False, CanRedo=False
+[2026-07-03 19:51:36.617] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=11319, CanUndo=False, CanRedo=False
+[2026-07-03 19:51:36.617] [INFO] [Form1] 拖放加载Json文件: G:\编程\traesolo\摸点小助手\mumu坐标计算\MuMu坐标计算\MuMu坐标计算\bin\Release\data\R键位重开20250714简化.json
+[2026-07-03 19:51:40.109] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=1577, CanUndo=False, CanRedo=False
+[2026-07-03 19:51:42.367] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=12181, CanUndo=False, CanRedo=False

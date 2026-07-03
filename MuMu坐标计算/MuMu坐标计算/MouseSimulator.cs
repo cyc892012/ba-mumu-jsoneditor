@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace MuMu坐标计算
 {
@@ -11,17 +8,22 @@ namespace MuMu坐标计算
         [DllImport("user32.dll")]
         private static extern bool SetCursorPos(int X, int Y);
 
-        /// <summary>
-        /// Moves the mouse cursor to the specified screen position.
-        /// </summary>
-        /// <param name="x">The X coordinate of the screen position.</param>
-        /// <param name="y">The Y coordinate of the screen position.</param>
+        [DllImport("user32.dll")]
+        private static extern bool NativeGetCursorPos(out System.Drawing.Point lpPoint);
+
+        public static System.Drawing.Point GetCursorPos()
+        {
+            if (!NativeGetCursorPos(out System.Drawing.Point point))
+                return new System.Drawing.Point(0, 0);
+            return point;
+        }
+
         public static void MoveMouseTo(int x, int y)
         {
             bool result = SetCursorPos(x, y);
             if (!result)
             {
-                throw new Exception("Failed to move the mouse to the specified position.");
+                throw new InvalidOperationException("Failed to move the mouse to the specified position.");
             }
         }
     }

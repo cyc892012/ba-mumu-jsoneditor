@@ -1,0 +1,12 @@
+{
+  "ConfigVersion": 1,
+  "FX": "1280",
+  "FY": "720",
+  "FindKey": "D",
+  "ResetKey": "F",
+  "JsonFolderPath": "C:\\Users\\Sakura\\AppData\\Roaming\\Netease\\MuMuPlayer\\data\\keymapConfig",
+  "Resolution4String": "",
+  "AdbPort": "16384",
+  "AdbPath": "",
+  "AdbPortsHistory": "16384"
+}

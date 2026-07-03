@@ -1,0 +1,3 @@
+﻿[2026-07-04 00:05:12.109] [INFO] [Application] 程序启动，版本: 1.0.0.0
+[2026-07-04 00:05:12.734] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=15317, CanUndo=False, CanRedo=False
+[2026-07-04 00:05:12.937] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=12181, CanUndo=False, CanRedo=False

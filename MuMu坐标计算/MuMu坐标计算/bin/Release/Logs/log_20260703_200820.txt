@@ -1,0 +1,4 @@
+﻿[2026-07-03 20:08:20.908] [INFO] [Application] 程序启动，版本: 1.0.0.0
+[2026-07-03 20:08:21.644] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=15317, CanUndo=False, CanRedo=False
+[2026-07-03 20:08:21.837] [INFO] [Form1] BackupAfterJsonReading: 记录初始快照, JSON长度=12181, CanUndo=False, CanRedo=False
+[2026-07-03 20:08:23.037] [INFO] [Form1] 打开ADB触摸采集窗口

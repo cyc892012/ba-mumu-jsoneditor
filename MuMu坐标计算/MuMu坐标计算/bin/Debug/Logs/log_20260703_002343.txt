@@ -1,0 +1,6 @@
+﻿[2026-07-03 00:23:43.446] [INFO] [Application] 程序启动，版本: 1.0.0.0
+[2026-07-03 00:24:05.354] [INFO] [Form1] 打开ADB触摸采集窗口
+[2026-07-03 00:24:07.225] [INFO] [AdbTouchForm] 尝试ADB连接
+[2026-07-03 00:24:24.066] [INFO] [AdbTouchForm] 停止ADB采集
+[2026-07-03 00:24:31.152] [INFO] [AdbTouchForm] 尝试ADB连接
+[2026-07-03 00:24:37.430] [INFO] [AdbTouchForm] 停止ADB采集
